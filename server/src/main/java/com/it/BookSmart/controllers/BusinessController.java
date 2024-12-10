@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/businesses")
 @RequiredArgsConstructor
+@RequestMapping("/api/businesses")
 public class BusinessController {
 
     private final BusinessService businessService;

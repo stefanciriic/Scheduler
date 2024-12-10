@@ -16,20 +16,20 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "first_name", nullable = false)
     @Size(max = 100)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(name = "last_name", nullable = false)
     @Size(max = 100)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(nullable = false)
     @Size(max = 100)
+    @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false)
     @Size(max = 100)
+    @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)

@@ -5,6 +5,8 @@ import com.it.BookSmart.entities.Appointment;
 import com.it.BookSmart.entities.Employee;
 import com.it.BookSmart.entities.ServiceType;
 import com.it.BookSmart.entities.User;
+import com.it.BookSmart.exceptions.ResourceNotFoundException;
+import com.it.BookSmart.exceptions.ValidationException;
 import com.it.BookSmart.mappers.AppointmentMapper;
 import com.it.BookSmart.repositories.AppointmentRepository;
 import com.it.BookSmart.repositories.EmployeeRepository;
@@ -13,7 +15,6 @@ import com.it.BookSmart.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,77 +39,86 @@ public class AppointmentService {
     public AppointmentDto getAppointmentById(Long id) {
         return appointmentRepository.findById(id)
                 .map(appointmentMapper::toDto)
-                .orElseThrow(() -> new IllegalArgumentException("Appointment not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + id));
     }
+
     @Transactional
     public AppointmentDto createAppointment(AppointmentDto appointmentDto) {
-        // Map DTO to entity
-        if (appointmentDto.getUserId() == null || appointmentDto.getServiceId() == null || appointmentDto.getEmployeeId() == null) {
-            throw new IllegalArgumentException("User, Service, and Employee IDs must be provided");
-        }
+        validateAppointmentDto(appointmentDto);
+
         Appointment appointment = appointmentMapper.toEntity(appointmentDto);
 
-        // Proveri da li je mapper vratio validnu instancu
         if (appointment == null) {
-            throw new IllegalStateException("Appointment mapping failed. Appointment is null.");
+            throw new ValidationException("Failed to map appointment DTO to entity.");
         }
 
-        // Postavi vreme zakazivanja ako nije prisutno
         if (appointment.getAppointmentTime() == null) {
             appointment.setAppointmentTime(LocalDateTime.now());
         }
 
-        // Snimi entitet
+        Long serviceId = appointmentDto.getServiceId();
+        ServiceType serviceType = serviceTypeRepository.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + serviceId));
+        appointment.setServiceType(serviceType);
+
+        Long userId = appointmentDto.getUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        appointment.setUser(user);
+
+        Long employeeId = appointmentDto.getEmployeeId();
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + employeeId));
+        appointment.setEmployee(employee);
+
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
-        // Mapiraj nazad u DTO i vrati rezultat
         return appointmentMapper.toDto(savedAppointment);
     }
 
     public AppointmentDto updateAppointment(Long id, AppointmentDto appointmentDto) {
-        // Proveri da li postoji appointment sa zadatim ID-jem
         Appointment appointment = appointmentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Appointment not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + id));
 
-        // Postavi vreme zakazivanja ako postoji u DTO
         if (appointmentDto.getAppointmentTime() != null) {
             appointment.setAppointmentTime(appointmentDto.getAppointmentTime());
         }
 
-        // Fetch and set ServiceType entity
         Long serviceId = appointmentDto.getServiceId();
         if (serviceId != null) {
             ServiceType serviceType = serviceTypeRepository.findById(serviceId)
-                    .orElseThrow(() -> new IllegalArgumentException("Service not found with id: " + serviceId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Service not found with id: " + serviceId));
             appointment.setServiceType(serviceType);
         }
 
-        // Fetch and set User entity
         Long userId = appointmentDto.getUserId();
         if (userId != null) {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
             appointment.setUser(user);
         }
 
-        // Fetch and set Employee entity
         Long employeeId = appointmentDto.getEmployeeId();
         if (employeeId != null) {
             Employee employee = employeeRepository.findById(employeeId)
-                    .orElseThrow(() -> new IllegalArgumentException("Employee not found with id: " + employeeId));
+                    .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + employeeId));
             appointment.setEmployee(employee);
         }
 
-        // Snimi promene i vrati DTO
         return appointmentMapper.toDto(appointmentRepository.save(appointment));
     }
 
-
-
     public void deleteAppointment(Long id) {
         if (!appointmentRepository.existsById(id)) {
-            throw new IllegalArgumentException("Appointment not found with id: " + id);
+            throw new ResourceNotFoundException("Appointment not found with id: " + id);
         }
         appointmentRepository.deleteById(id);
+    }
+
+    // Helper method to validate input DTO
+    private void validateAppointmentDto(AppointmentDto appointmentDto) {
+        if (appointmentDto.getUserId() == null || appointmentDto.getServiceId() == null || appointmentDto.getEmployeeId() == null) {
+            throw new ValidationException("User, Service, and Employee IDs must be provided.");
+        }
     }
 }

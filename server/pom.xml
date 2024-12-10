@@ -102,6 +102,15 @@
 			<artifactId>java-jwt</artifactId>
 			<version>4.3.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -135,3 +144,14 @@
     </build>
 
 </project>
+
+<!--<profiles>-->
+<!--<profile>-->
+<!--	<id>test-logging</id>-->
+<!--	<properties>-->
+<!--		<spring.profiles.active>test-logging</spring.profiles.active>-->
+<!--	</properties>-->
+<!--</profile>-->
+<!--</profiles>-->
+<!--		mvn clean install -Ptest-logging-->
+

@@ -4,11 +4,12 @@ import com.it.BookSmart.dtos.CredentialsDto;
 import com.it.BookSmart.dtos.SignUpDto;
 import com.it.BookSmart.dtos.UserDto;
 import com.it.BookSmart.entities.User;
-import com.it.BookSmart.exceptions.AppException;
+import com.it.BookSmart.exceptions.ConflictException;
+import com.it.BookSmart.exceptions.ResourceNotFoundException;
+import com.it.BookSmart.exceptions.ValidationException;
 import com.it.BookSmart.mappers.UserMapper;
 import com.it.BookSmart.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,44 +21,75 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final UserMapper userMapper;
 
     public UserDto login(CredentialsDto credentialsDto) {
-        User user = userRepository.findByUsername(credentialsDto.username())
-                .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+        validateCredentials(credentialsDto);
 
-        if (passwordEncoder.matches(CharBuffer.wrap(credentialsDto.password()), user.getPassword())) {
-            return userMapper.toUserDto(user);
+        User user = userRepository.findByUsername(credentialsDto.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("Unknown user with username: " + credentialsDto.getUsername()));
+
+        if (!passwordEncoder.matches(CharBuffer.wrap(credentialsDto.getPassword()), user.getPassword())) {
+            throw new ValidationException("Invalid password");
         }
-        throw new AppException("Invalid password", HttpStatus.BAD_REQUEST);
+
+        return userMapper.toUserDto(user);
     }
 
     public UserDto register(SignUpDto userDto) {
-        Optional<User> optionalUser = userRepository.findByUsername(userDto.username());
+        validateSignUp(userDto);
 
-        if (optionalUser.isPresent()) {
-            throw new AppException("Username already exists", HttpStatus.BAD_REQUEST);
+        if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
+            throw new ConflictException("Username already exists");
         }
 
         User user = userMapper.signUpToUser(userDto);
-        user.setPassword(passwordEncoder.encode(CharBuffer.wrap(userDto.password())));
+        user.setPassword(passwordEncoder.encode(CharBuffer.wrap(userDto.getPassword())));
 
         User savedUser = userRepository.save(user);
-
         return userMapper.toUserDto(savedUser);
     }
 
     public UserDto findByUsername(String username) {
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username cannot be null or blank");
+        }
+
         return userRepository.findByUsername(username)
                 .map(userMapper::toUserDto)
-                .orElseThrow(() -> new AppException("User with username " + username + " not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResourceNotFoundException("User with username " + username + " not found"));
     }
 
     public boolean isUsernameAvailable(String username) {
+        if (username == null || username.isBlank()) {
+            throw new ValidationException("Username cannot be null or blank");
+        }
         return !userRepository.existsByUsername(username);
     }
 
+    private void validateCredentials(CredentialsDto credentialsDto) {
+        if (credentialsDto.getUsername() == null || credentialsDto.getUsername().isBlank()) {
+            throw new ValidationException("Username cannot be null or blank");
+        }
+        if (credentialsDto.getPassword() == null || credentialsDto.getPassword().isEmpty()) {
+            throw new ValidationException("Password cannot be null or blank");
+        }
+    }
+
+    private void validateSignUp(SignUpDto userDto) {
+        if (userDto.getUsername() == null || userDto.getUsername().isBlank()) {
+            throw new ValidationException("Username cannot be null or blank");
+        }
+        if (userDto.getPassword() == null || userDto.getPassword().isEmpty()) {
+            throw new ValidationException("Password cannot be null or blank");
+        }
+        if (userDto.getFirstName() == null || userDto.getFirstName().isBlank()) {
+            throw new ValidationException("First name cannot be null or blank");
+        }
+        if (userDto.getLastName() == null || userDto.getLastName().isBlank()) {
+            throw new ValidationException("Last name cannot be null or blank");
+        }
+    }
 }
+

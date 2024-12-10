@@ -5,22 +5,18 @@ import com.it.BookSmart.entities.Business;
 import com.it.BookSmart.mappers.BusinessMapper;
 import com.it.BookSmart.repositories.BusinessRepository;
 import com.it.BookSmart.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class BusinessService {
 
     private final BusinessRepository businessRepository;
     private final UserRepository userRepository;
     private final BusinessMapper businessMapper;
-
-    public BusinessService(BusinessRepository businessRepository, UserRepository userRepository, BusinessMapper businessMapper) {
-        this.businessRepository = businessRepository;
-        this.userRepository = userRepository;
-        this.businessMapper = businessMapper;
-    }
 
     public BusinessDto createBusiness(BusinessDto businessDto) {
         Business business = businessMapper.toEntity(businessDto);

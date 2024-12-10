@@ -1,9 +1,16 @@
 //package com.it.BookSmart;
 //
-//import com.it.BookSmart.entities.Appointment;
+//import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.it.BookSmart.dtos.AppointmentDto;
+//import com.it.BookSmart.entities.*;
 //import com.it.BookSmart.repositories.AppointmentRepository;
+//import com.it.BookSmart.repositories.EmployeeRepository;
+//import com.it.BookSmart.repositories.ServiceTypeRepository;
+//import com.it.BookSmart.repositories.UserRepository;
 //import jakarta.transaction.Transactional;
+//import org.junit.jupiter.api.MethodOrderer;
 //import org.junit.jupiter.api.Test;
+//import org.junit.jupiter.api.TestMethodOrder;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 //import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,6 +21,7 @@
 //import org.springframework.test.context.jdbc.Sql;
 //import org.springframework.test.web.servlet.MockMvc;
 //
+//import java.time.LocalDateTime;
 //import java.util.List;
 //
 //import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -21,37 +29,58 @@
 //import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 //import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 //
-//@SpringBootTest(classes = BookSmartApplication.class)
-//@Transactional
-//@AutoConfigureTestDatabase
 //@AutoConfigureMockMvc
 //@ActiveProfiles("test")
-//@Sql(scripts = {"classpath:data.sql"})
-//@TestPropertySource("classpath:application-test.properties")
+//@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 //public class AppointmentIntegrationTest {
 //
 //    @Autowired
 //    private MockMvc mockMvc;
 //
 //    @Autowired
+//    private ObjectMapper objectMapper;
+//    @Autowired
 //    private AppointmentRepository appointmentRepository;
+//    @Autowired
+//    private ServiceTypeRepository serviceTypeRepository;
+//    @Autowired
+//    private UserRepository userRepository;
+//
+//    @Autowired
+//    private EmployeeRepository employeeRepository;
+//
 //
 //    @Test
 //    public void testCreateAppointment() throws Exception {
-//        // Step 1: Prepare Appointment JSON
-//        String appointmentJson = """
-//            {
-//                "serviceId": 1,
-//                "userId": 1,
-//                "employeeId": 1,
-//                "appointmentTime": "2023-12-01T10:00:00"
-//            }
-//        """;
+//        ServiceType serviceType = new ServiceType();
+//        serviceType.setName("Oil Change");
+//        serviceTypeRepository.save(serviceType);
+//        User user = new User();
+//        user.setFirstName("Test");
+//        user.setLastName("User");
+//        user.setRole(Role.ADMIN);
+//        user.setPassword("password");
+//        user.setUsername("admin");
+//
+//        userRepository.save(user);
+//
+//        Employee employee = new Employee();
+//        employee.setName("Jane Smith");
+//        employee.setPosition("Mechanic");
+//        employee.setBusiness(savedBusiness);
+//        employeeRepository.save(employee);
+//        // Step 1: Create an AppointmentRequest DTO object
+//        AppointmentDto appointmentRequest = new AppointmentDto();
+//        appointmentRequest.setServiceId(1L);
+//        appointmentRequest.setUserId(1L);
+//        //appointmentRequest.setEmployeeId(1L);
+//        appointmentRequest.setAppointmentTime(LocalDateTime.of(2023, 12, 1, 10, 0));
 //
 //        // Step 2: Perform POST request to create the appointment
-//        mockMvc.perform(post("/appointments")
+//        mockMvc.perform(post("/api/appointments")
 //                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(appointmentJson))
+//                        .content(objectMapper.writeValueAsString(appointmentRequest))) // Serialize DTO to JSON
 //                .andExpect(status().isOk())
 //                .andExpect(jsonPath("$.id").isNotEmpty())
 //                .andExpect(jsonPath("$.serviceName").value("Oil Change"))

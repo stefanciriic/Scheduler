@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/service-types")
 @RequiredArgsConstructor
+@RequestMapping("/api/service-types")
 public class ServiceTypeController {
 
     private final ServiceTypeManager serviceTypeManager;

@@ -4,19 +4,18 @@ import com.it.BookSmart.dtos.ServiceTypeDto;
 import com.it.BookSmart.entities.ServiceType;
 import com.it.BookSmart.mappers.ServiceTypeMapper;
 import com.it.BookSmart.repositories.ServiceTypeRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ServiceTypeManager {
-    private final ServiceTypeRepository repository;
-    private final ServiceTypeMapper mapper;
 
-    public ServiceTypeManager(ServiceTypeRepository repository, ServiceTypeMapper mapper) {
-        this.repository = repository;
-        this.mapper = mapper;
-    }
+    private final ServiceTypeRepository repository;
+
+    private final ServiceTypeMapper mapper;
 
     public ServiceTypeDto createServiceType(ServiceTypeDto serviceTypeDto) {
         ServiceType serviceType = mapper.toEntity(serviceTypeDto);
