@@ -1,15 +1,12 @@
-package com.it.BookSmart.entites;
+package com.it.BookSmart.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @Entity
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "app_user")
@@ -34,4 +31,11 @@ public class User {
     @Column(nullable = false)
     @Size(max = 100)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    public User(Long userId) {
+        this.id = userId;
+    }
 }

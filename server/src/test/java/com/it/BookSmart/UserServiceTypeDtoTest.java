@@ -2,10 +2,10 @@ package com.it.BookSmart;
 
 import com.it.BookSmart.dtos.SignUpDto;
 import com.it.BookSmart.dtos.UserDto;
-import com.it.BookSmart.entites.User;
+import com.it.BookSmart.entities.User;
 import com.it.BookSmart.exceptions.AppException;
 import com.it.BookSmart.mappers.UserMapper;
-import com.it.BookSmart.repository.UserRepository;
+import com.it.BookSmart.repositories.UserRepository;
 import com.it.BookSmart.services.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ import java.nio.CharBuffer;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+class UserServiceTypeDtoTest {
 
     @Mock
     private UserRepository userRepository;
@@ -39,8 +39,8 @@ class UserServiceTest {
     @Test
     void testRegister_Success() {
         SignUpDto signUpDto = new SignUpDto("newUser", "password123", "John", "Doe".toCharArray());
-        User user = new User(null, "John", "Doe", "newUser", null);
-        User savedUser = new User(1L, "John", "Doe", "newUser", "encodedPassword");
+        User user = new User(null, "John", "Doe", "newUser", null,null);
+        User savedUser = new User(1L, "John", "Doe", "newUser", "encodedPassword",null);
         UserDto expectedDto = new UserDto(1L, "John", "Doe", "newUser", null);
 
         when(userRepository.findByUsername(signUpDto.username())).thenReturn(Optional.empty());

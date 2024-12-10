@@ -1,6 +1,6 @@
-package com.it.BookSmart.repository;
+package com.it.BookSmart.repositories;
 
-import com.it.BookSmart.entites.User;
+import com.it.BookSmart.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

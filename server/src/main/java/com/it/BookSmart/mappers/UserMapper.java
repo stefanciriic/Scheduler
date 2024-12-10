@@ -2,7 +2,7 @@ package com.it.BookSmart.mappers;
 
 import com.it.BookSmart.dtos.SignUpDto;
 import com.it.BookSmart.dtos.UserDto;
-import com.it.BookSmart.entites.User;
+import com.it.BookSmart.entities.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
