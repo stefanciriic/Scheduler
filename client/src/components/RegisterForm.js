@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useApplicationStore } from '../store/application.store';
 import { checkUsernameAvailability } from '../api/userService'; 
 import axiosInstance from '../api/axiosInstance';
+import handleApiError from '../api/handleApiError';
 const RegisterForm = () => {
     const [formData, setFormData] = useState({
         firstName: "",
@@ -76,8 +77,8 @@ const RegisterForm = () => {
 
             navigate('/');
         } catch (error) {
-            console.error("Registration failed", error);
-            setErrorMessage("Registration failed. Please check your details.");
+            const errorMsg = handleApiError(error);
+            setErrorMessage(errorMsg);
         }
     };
 

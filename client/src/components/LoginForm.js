@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useApplicationStore } from '../store/application.store'; // Import Zustand store
+import { useApplicationStore } from '../store/application.store'; 
 import { FaGoogle, FaFacebook, FaInstagram } from 'react-icons/fa';
 import axiosInstance from '../api/axiosInstance';
+import handleApiError from '../api/handleApiError';
 
 const LoginForm = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
 
-    const setToken = useApplicationStore((state) => state.setToken); // Zustand action
-    const setUser = useApplicationStore((state) => state.setUser); // Zustand action
+    const setToken = useApplicationStore((state) => state.setToken); 
+    const setUser = useApplicationStore((state) => state.setUser); 
 
     const navigate = useNavigate();
 
@@ -25,8 +26,8 @@ const LoginForm = () => {
 
             navigate('/');
         } catch (error) {
-            console.error("Login failed", error);
-            setErrorMessage("Login error. Please check your username and password.");
+            const errorMsg = handleApiError(error);
+            setErrorMessage(errorMsg);
         }
     };
 

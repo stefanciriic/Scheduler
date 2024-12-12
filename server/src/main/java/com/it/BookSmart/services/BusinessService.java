@@ -2,9 +2,13 @@ package com.it.BookSmart.services;
 
 import com.it.BookSmart.dtos.BusinessDto;
 import com.it.BookSmart.entities.Business;
+import com.it.BookSmart.entities.User;
+import com.it.BookSmart.exceptions.ResourceNotFoundException;
+import com.it.BookSmart.exceptions.ValidationException;
 import com.it.BookSmart.mappers.BusinessMapper;
 import com.it.BookSmart.repositories.BusinessRepository;
 import com.it.BookSmart.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,35 +23,34 @@ public class BusinessService {
     private final BusinessMapper businessMapper;
 
     public BusinessDto createBusiness(BusinessDto businessDto) {
+        User owner = userRepository.findById(businessDto.getOwnerId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + businessDto.getOwnerId()));
+
         Business business = businessMapper.toEntity(businessDto);
 
-        // Validate owner exists
-        if (businessDto.getOwnerId() != null) {
-            userRepository.findById(businessDto.getOwnerId())
-                    .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + businessDto.getOwnerId()));
-        }
+        business.setOwner(owner);
+        Business savedBusiness = businessRepository.save(business);
 
-        return businessMapper.toDto(businessRepository.save(business));
+        return businessMapper.toDto(savedBusiness);
     }
 
+    @Transactional
     public BusinessDto updateBusiness(Long id, BusinessDto businessDto) {
-        Business business = businessRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Business not found with id: " + id));
+        Business existingBusiness = businessRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + id));
 
-        business.setName(businessDto.getName());
-        business.setAddress(businessDto.getAddress());
-        business.setDescription(businessDto.getDescription());
-        business.setWorkingHours(businessDto.getWorkingHours());
+        Business updatedBusiness = businessMapper.toEntity(businessDto);
+        updatedBusiness.setId(existingBusiness.getId());
+        updatedBusiness.setOwner(existingBusiness.getOwner());
 
-        if (businessDto.getOwnerId() != null) {
-            business.setOwner(userRepository.findById(businessDto.getOwnerId())
-                    .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + businessDto.getOwnerId())));
-        }
-
-        return businessMapper.toDto(businessRepository.save(business));
+        return businessMapper.toDto(businessRepository.save(updatedBusiness));
     }
 
+    @Transactional
     public void deleteBusiness(Long id) {
+        if (!businessRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Business not found with id: " + id);
+        }
         businessRepository.deleteById(id);
     }
 
@@ -61,7 +64,7 @@ public class BusinessService {
     public BusinessDto getBusinessById(Long id) {
         return businessRepository.findById(id)
                 .map(businessMapper::toDto)
-                .orElseThrow(() -> new IllegalArgumentException("Business not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + id));
     }
 }
 

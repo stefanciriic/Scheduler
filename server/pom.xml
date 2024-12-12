@@ -38,10 +38,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
@@ -86,10 +88,12 @@
 
 		<!-- Database Dependencies -->
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.33</version>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<version>8.2.0</version>
 		</dependency>
+
+
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -144,14 +148,4 @@
     </build>
 
 </project>
-
-<!--<profiles>-->
-<!--<profile>-->
-<!--	<id>test-logging</id>-->
-<!--	<properties>-->
-<!--		<spring.profiles.active>test-logging</spring.profiles.active>-->
-<!--	</properties>-->
-<!--</profile>-->
-<!--</profiles>-->
-<!--		mvn clean install -Ptest-logging-->
 

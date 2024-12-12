@@ -1,6 +1,8 @@
 package com.it.BookSmart.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter
@@ -13,7 +15,12 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Name cannot be blank")
+    @Column(nullable = false, length = 100)
     private String name;
+
+    @NotBlank(message = "Position cannot be blank")
+    @Column(nullable = false, length = 50)
     private String position;
 
     @ManyToOne

@@ -10,22 +10,21 @@
     }
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^6.7.1",
-    "@okta/okta-auth-js": "^7.8.1",
-    "@okta/okta-react": "^6.9.0",
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.0.1",
+    "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
     "axios": "^1.7.9",
     "classnames": "^2.5.1",
     "cookie": "^1.0.2",
     "core-js": "^3.39.0",
+    "install": "^0.13.0",
+    "npm": "^10.9.2",
     "nth-check": "^2.0.1",
     "postcss": "^8.4.49",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-icons": "^5.3.0",
-    "react-router-dom": "^7.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-icons": "^5.4.0",
+    "react-router-dom": "^7.0.2",
     "react-scripts": "^5.0.1",
     "web-vitals": "^4.2.4",
     "zustand": "^5.0.2"
@@ -55,9 +54,9 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-transform-private-property-in-object": "^7.25.9",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "eslint": "^8.57.1",
     "eslint-config-react-app": "^7.0.1",
-    "tailwindcss": "^3.4.15"
+    "tailwindcss": "^3.4.16"
   }
 }

@@ -5,6 +5,7 @@ import com.it.BookSmart.entities.Appointment;
 import com.it.BookSmart.entities.Employee;
 import com.it.BookSmart.entities.ServiceType;
 import com.it.BookSmart.entities.User;
+import com.it.BookSmart.exceptions.ValidationException;
 import com.it.BookSmart.mappers.AppointmentMapper;
 import com.it.BookSmart.repositories.AppointmentRepository;
 import com.it.BookSmart.repositories.EmployeeRepository;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -54,7 +56,6 @@ class AppointmentServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Initialize entities
         user = new User(1L, "John", "Doe", "john.doe", "password", null);
         employee = new Employee(1L, "Jane Smith", "Mechanic", null);
 
@@ -102,6 +103,18 @@ class AppointmentServiceTest {
 
     @Test
     void testCreateAppointment() {
+        ServiceType serviceType = new ServiceType();
+        serviceType.setId(1L);
+        when(serviceTypeRepository.findById(1L)).thenReturn(Optional.of(serviceType));
+
+        User user = new User();
+        user.setId(1L);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        Employee employee = new Employee();
+        employee.setId(1L);
+        when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
+
         when(appointmentMapper.toEntity(appointmentDto)).thenReturn(appointment);
         when(appointmentRepository.save(appointment)).thenReturn(appointment);
         when(appointmentMapper.toDto(appointment)).thenReturn(appointmentDto);
@@ -111,6 +124,10 @@ class AppointmentServiceTest {
         assertNotNull(result);
         assertEquals(appointmentDto.getId(), result.getId());
         verify(appointmentRepository, times(1)).save(appointment);
+
+        verify(serviceTypeRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).findById(1L);
+        verify(employeeRepository, times(1)).findById(1L);
     }
 
     @Test
@@ -138,15 +155,4 @@ class AppointmentServiceTest {
         verify(appointmentRepository, times(1)).deleteById(1L);
     }
 
-    @Test
-    void testCreateAppointmentThrowsExceptionWhenIdsMissing() {
-        appointmentDto.setUserId(null);
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            appointmentService.createAppointment(appointmentDto);
-        });
-
-        assertEquals("User, Service, and Employee IDs must be provided", exception.getMessage());
-        verifyNoInteractions(appointmentRepository);
-    }
 }

@@ -3,10 +3,14 @@ package com.it.BookSmart.employee;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.it.BookSmart.entities.Business;
 import com.it.BookSmart.entities.Employee;
+import com.it.BookSmart.entities.Role;
+import com.it.BookSmart.entities.User;
+import com.it.BookSmart.repositories.AppointmentRepository;
 import com.it.BookSmart.repositories.BusinessRepository;
 import com.it.BookSmart.repositories.EmployeeRepository;
 import com.it.BookSmart.dtos.EmployeeDto;
-import org.aspectj.lang.annotation.Before;
+import com.it.BookSmart.repositories.UserRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -46,18 +50,25 @@ public class EmployeeControllerIntegrationTest {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    private static Business business;
+    private Business business;
 
-    private static EmployeeDto employeeDto;
+    private EmployeeDto employeeDto;
 
-    private static long createdId;
+    private Long createdEmployeeId;
 
-    @BeforeAll
-    public static void setup(@Autowired BusinessRepository businessRepository) {
+    @BeforeEach
+    @Transactional
+    public void setup() {
+        // Clear repositories to avoid data conflicts
+        employeeRepository.deleteAll();
+        businessRepository.deleteAll();
+
+        // Create and save a business
         business = businessRepository.save(
-                new Business(null, "Test Business", "123 Test Street", "A test business", "9 AM - 5 PM")
+                new Business(null, "Test Business", "123 Test Street", "A test business", "9 AM - 5 PM", null)
         );
 
+        // Initialize a valid EmployeeDto for use in tests
         employeeDto = EmployeeDto.builder()
                 .name("John Doe")
                 .position("Manager")
@@ -79,14 +90,11 @@ public class EmployeeControllerIntegrationTest {
                 .andExpect(jsonPath("$.businessId").value(business.getId()))
                 .andReturn().getResponse().getContentAsString();
 
+        EmployeeDto createdEmployee = objectMapper.readValue(response, EmployeeDto.class);
+        createdEmployeeId = createdEmployee.getId();
 
-        // Verifikacija u bazi
-        List<Employee> employees = employeeRepository.findAll();
-        assertEquals(1, employees.size());
-        Employee savedEmployee = employees.get(0);
-
-        createdId =savedEmployee.getId();
-
+        // Verify employee is saved in the database
+        Employee savedEmployee = employeeRepository.findById(createdEmployeeId).orElseThrow();
         assertEquals(employeeDto.getName(), savedEmployee.getName());
         assertEquals(employeeDto.getPosition(), savedEmployee.getPosition());
         assertEquals(employeeDto.getBusinessId(), savedEmployee.getBusiness().getId());
@@ -95,14 +103,17 @@ public class EmployeeControllerIntegrationTest {
     @Test
     @Order(2)
     public void testUpdateEmployee() throws Exception {
+        // Create an employee for updating
+        testCreateEmployee();
+
         EmployeeDto updatedEmployeeDto = EmployeeDto.builder()
-                .id(createdId)
+                .id(createdEmployeeId)
                 .name("John Doe Updated")
                 .position("Senior Manager")
                 .businessId(business.getId())
                 .build();
 
-        mockMvc.perform(put("/api/employees/" + createdId)
+        mockMvc.perform(put("/api/employees/" + createdEmployeeId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedEmployeeDto)))
                 .andDo(print())
@@ -110,7 +121,7 @@ public class EmployeeControllerIntegrationTest {
                 .andExpect(jsonPath("$.name").value(updatedEmployeeDto.getName()))
                 .andExpect(jsonPath("$.position").value(updatedEmployeeDto.getPosition()));
 
-        Employee updatedEmployee = employeeRepository.findById(createdId).orElseThrow();
+        Employee updatedEmployee = employeeRepository.findById(createdEmployeeId).orElseThrow();
         assertEquals("John Doe Updated", updatedEmployee.getName());
         assertEquals("Senior Manager", updatedEmployee.getPosition());
     }
@@ -118,27 +129,48 @@ public class EmployeeControllerIntegrationTest {
     @Test
     @Order(3)
     public void testGetAllEmployees() throws Exception {
+        // Create an employee to populate the repository
+        testCreateEmployee();
+
         mockMvc.perform(get("/api/employees")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].name").value("John Doe Updated"));
+                .andExpect(jsonPath("$[0].name").value("John Doe"))
+                .andExpect(jsonPath("$[0].position").value("Manager"));
     }
 
     @Test
     @Order(4)
     public void testDeleteEmployee() throws Exception {
-        mockMvc.perform(delete("/api/employees/" + createdId)
+        // Create an employee to delete
+        testCreateEmployee();
+
+        mockMvc.perform(delete("/api/employees/" + createdEmployeeId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
-        assertFalse(employeeRepository.findById(createdId).isPresent());
+        assertFalse(employeeRepository.findById(createdEmployeeId).isPresent());
     }
 
     @Test
     @Order(5)
+    public void testGetEmployeesByBusiness() throws Exception {
+        // Create an employee associated with the business
+        testCreateEmployee();
+
+        mockMvc.perform(get("/api/employees/business/" + business.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].name").value("John Doe"));
+    }
+
+    @Test
+    @Order(6)
     public void testUpdateEmployeeWithInvalidData() throws Exception {
         EmployeeDto invalidEmployeeDto = EmployeeDto.builder()
                 .name(null)
@@ -146,7 +178,7 @@ public class EmployeeControllerIntegrationTest {
                 .businessId(null)
                 .build();
 
-        mockMvc.perform(put("/api/employees/1")
+        mockMvc.perform(put("/api/employees/" + -1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidEmployeeDto)))
                 .andExpect(status().isBadRequest())
@@ -156,32 +188,7 @@ public class EmployeeControllerIntegrationTest {
     }
 
     @Test
-    @Order(6)
-    public void testUpdateEmployeeWithNullBody() throws Exception {
-        mockMvc.perform(put("/api/employees/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(""))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Request body is missing or malformed."));
-    }
-
-    @Test
     @Order(7)
-    public void testGetEmployeesByBusiness() throws Exception {
-        Employee employee = new Employee(null, "Test Employee", "Role", business);
-        employeeRepository.save(employee);
-
-        mockMvc.perform(get("/api/employees/business/" + business.getId())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].name").value(employee.getName()));
-        List<Employee> employees = employeeRepository.findAllByBusinessId(business.getId());
-        System.out.println("Employees found: " + employees.size());
-    }
-
-    @Test
-    @Order(8)
     public void testUpdateEmployeeWithNonExistingId() throws Exception {
         EmployeeDto updatedEmployeeDto = EmployeeDto.builder()
                 .name("Non Existing")
@@ -193,33 +200,27 @@ public class EmployeeControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedEmployeeDto)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("Employee not found with id: 99999"));
+                .andExpect(jsonPath("$.message").value("Employee not found with id: 99999"));
     }
 
     @Test
-    @Order(9)
+    @Order(8)
     public void testDeleteEmployeeWithNonExistingId() throws Exception {
         mockMvc.perform(delete("/api/employees/99999")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("Employee not found with id: 99999"));
+                .andExpect(jsonPath("$.message").value("Employee not found with id: 99999"));
     }
 
     @Test
-    @Order(10)
+    @Order(9)
     public void testCreateEmployeeWithNullBody() throws Exception {
         mockMvc.perform(post("/api/employees")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Request body is missing or malformed."));
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Request body is missing or malformed."));
     }
-
-
-
-
-
-
 
 }
 

@@ -11,5 +11,6 @@ public interface ServiceTypeRepository extends JpaRepository<ServiceType, Long> 
 
     Optional<ServiceType> findServiceById(Long id);
 
+    boolean existsByNameAndBusinessId(String name, Long businessId);
 }
 

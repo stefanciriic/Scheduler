@@ -2,6 +2,8 @@ package com.it.BookSmart.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -26,10 +28,13 @@ public class Appointment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Employee employee;
 
     private LocalDateTime appointmentTime;
 
     @Version
     private Integer version;
+
+
 }

@@ -38,8 +38,8 @@ public class AuthControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static final String REGISTER_URL = "/api/register";
-    private static final String LOGIN_URL = "/api/login";
+    private static final String REGISTER_URL = "/register";
+    private static final String LOGIN_URL = "/login";
 
     private static final String TEST_USERNAME = "testUser";
     private static final String TEST_PASSWORD = "password";
@@ -87,8 +87,9 @@ public class AuthControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(credentials)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Invalid password"));
+                .andExpect(jsonPath("$.message").value("Invalid password"));
     }
+
 
     @Test
     @Order(4)
@@ -99,7 +100,7 @@ public class AuthControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(credentials)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("Unknown user with username: unknownUser"));
+                .andExpect(jsonPath("$.message").value("Unknown user with username: unknownUser"));
     }
 
     @Test
@@ -111,7 +112,7 @@ public class AuthControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signUpDto)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("Username already exists"));
+                .andExpect(jsonPath("$.message").value("Username already exists"));
     }
 }
 

@@ -2,6 +2,7 @@ package com.it.BookSmart.controllers;
 
 import com.it.BookSmart.dtos.AppointmentDto;
 import com.it.BookSmart.services.AppointmentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +27,12 @@ public class AppointmentController {
     }
 
     @PostMapping
-    public ResponseEntity<AppointmentDto> createAppointment(@RequestBody AppointmentDto appointmentDto) {
+    public ResponseEntity<AppointmentDto> createAppointment(@RequestBody @Valid AppointmentDto appointmentDto) {
         return ResponseEntity.ok(appointmentService.createAppointment(appointmentDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AppointmentDto> updateAppointment(@PathVariable Long id, @RequestBody AppointmentDto appointmentDto) {
+    public ResponseEntity<AppointmentDto> updateAppointment(@PathVariable Long id, @RequestBody @Valid AppointmentDto appointmentDto) {
         return ResponseEntity.ok(appointmentService.updateAppointment(id, appointmentDto));
     }
 

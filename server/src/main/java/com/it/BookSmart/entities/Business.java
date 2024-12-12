@@ -1,6 +1,8 @@
 package com.it.BookSmart.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.List;
@@ -15,27 +17,43 @@ public class Business {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Name cannot be blank")
+    @Size(max = 100, message = "Name cannot exceed 100 characters")
+    @Column(nullable = false, length = 100)
     private String name;
+
+
+    @NotBlank(message = "Address cannot be blank")
+    @Size(max = 200, message = "Address cannot exceed 200 characters")
+    @Column(nullable = false, length = 200)
     private String address;
+
+    @NotBlank(message = "Description cannot be blank")
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    @Column(nullable = false, length = 500)
     private String description;
 
-    @OneToOne
-    private User owner;
-
-    @OneToMany(mappedBy = "business")
-    private List<Employee> employees;
-
-    @OneToMany(mappedBy = "business")
-    private List<ServiceType> serviceTypes;
-
+    @NotBlank(message = "Working hours cannot be blank")
+    @Column(nullable = false)
     private String workingHours;
 
-    public Business(Long id, String name, String address, String description, String workingHours) {
+    @OneToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
+    @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Employee> employees;
+
+    @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ServiceType> serviceTypes;
+
+    public Business(Long id, String name, String address, String description, String workingHours,User owner) {
         this.id = id;
         this.name = name;
         this.address = address;
         this.description = description;
         this.workingHours = workingHours;
+        this.owner = owner;
     }
 
     public Business(Long businessId) {

@@ -15,6 +15,8 @@ import com.it.BookSmart.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,13 +46,7 @@ public class AppointmentService {
 
     @Transactional
     public AppointmentDto createAppointment(AppointmentDto appointmentDto) {
-        validateAppointmentDto(appointmentDto);
-
         Appointment appointment = appointmentMapper.toEntity(appointmentDto);
-
-        if (appointment == null) {
-            throw new ValidationException("Failed to map appointment DTO to entity.");
-        }
 
         if (appointment.getAppointmentTime() == null) {
             appointment.setAppointmentTime(LocalDateTime.now());
@@ -113,12 +109,5 @@ public class AppointmentService {
             throw new ResourceNotFoundException("Appointment not found with id: " + id);
         }
         appointmentRepository.deleteById(id);
-    }
-
-    // Helper method to validate input DTO
-    private void validateAppointmentDto(AppointmentDto appointmentDto) {
-        if (appointmentDto.getUserId() == null || appointmentDto.getServiceId() == null || appointmentDto.getEmployeeId() == null) {
-            throw new ValidationException("User, Service, and Employee IDs must be provided.");
-        }
     }
 }
