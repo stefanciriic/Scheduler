@@ -56,7 +56,7 @@ class AppointmentServiceTest {
 
     @BeforeEach
     void setUp() {
-        user = new User(1L, "John", "Doe", "john.doe", "password", null);
+        user = new User(1L, "John", "Doe", "john.doe", "password", null,null);
         employee = new Employee(1L, "Jane Smith", "Mechanic", null);
 
         serviceType = new ServiceType(1L, "Oil Change", "Car oil change service", 212.43, null, employee);

@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -27,13 +28,15 @@ public class BusinessController {
     }
 
     @PostMapping
-    public ResponseEntity<BusinessDto> createBusiness(@RequestBody @Valid BusinessDto businessDto) {
-        return ResponseEntity.ok(businessService.createBusiness(businessDto));
+    public ResponseEntity<BusinessDto> createBusiness(
+            @RequestPart("business") @Valid BusinessDto businessDto,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        return ResponseEntity.ok(businessService.createBusiness(businessDto, file));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BusinessDto> updateBusiness(@PathVariable Long id, @RequestBody @Valid BusinessDto businessDto) {
-        return ResponseEntity.ok(businessService.updateBusiness(id, businessDto));
+    public ResponseEntity<BusinessDto> updateBusiness(@PathVariable Long id, @RequestBody @Valid BusinessDto businessDto,  @RequestPart(value = "file", required = false) MultipartFile file) {
+        return ResponseEntity.ok(businessService.updateBusiness(id, businessDto,file));
     }
 
     @DeleteMapping("/{id}")

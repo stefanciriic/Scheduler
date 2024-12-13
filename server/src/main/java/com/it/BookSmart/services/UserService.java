@@ -1,10 +1,8 @@
 package com.it.BookSmart.services;
 
-import com.it.BookSmart.dtos.CredentialsDto;
-import com.it.BookSmart.dtos.SignUpDto;
 import com.it.BookSmart.dtos.UserDto;
+import com.it.BookSmart.entities.Image;
 import com.it.BookSmart.entities.User;
-import com.it.BookSmart.exceptions.ConflictException;
 import com.it.BookSmart.exceptions.ResourceNotFoundException;
 import com.it.BookSmart.exceptions.ValidationException;
 import com.it.BookSmart.mappers.UserMapper;
@@ -12,6 +10,7 @@ import com.it.BookSmart.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.CharBuffer;
 
@@ -20,30 +19,41 @@ import java.nio.CharBuffer;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final CloudinaryService cloudinaryService;
 
-    public UserDto login(CredentialsDto credentialsDto) {
-        User user = userRepository.findByUsername(credentialsDto.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("Unknown user with username: " + credentialsDto.getUsername()));
-
-        if (!passwordEncoder.matches(CharBuffer.wrap(credentialsDto.getPassword()), user.getPassword())) {
-            throw new ValidationException("Invalid password");
-        }
-
+    public UserDto getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return userMapper.toUserDto(user);
     }
 
-    public UserDto register(SignUpDto userDto) {
-        if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
-            throw new ConflictException("Username already exists");
+    public UserDto updateUser(Long id, UserDto userDto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+        user.setUsername(userDto.getUsername());
+
+        userRepository.save(user);
+        return userMapper.toUserDto(user);
+    }
+
+    public UserDto updateUserImage(Long id, MultipartFile file) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.getProfileImage() != null) {
+            cloudinaryService.deleteImage(user.getProfileImage().getPublicId());
         }
 
-        User user = userMapper.signUpToUser(userDto);
-        user.setPassword(passwordEncoder.encode(CharBuffer.wrap(userDto.getPassword())));
+        String imageUrl = cloudinaryService.uploadImage(file, "user-profiles");
+        Image newImage = Image.builder().url(imageUrl).build();
+        user.setProfileImage(newImage);
 
-        User savedUser = userRepository.save(user);
-        return userMapper.toUserDto(savedUser);
+        userRepository.save(user);
+        return userMapper.toUserDto(user);
     }
 
     public UserDto findByUsername(String username) {
@@ -56,12 +66,6 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User with username " + username + " not found"));
     }
 
-    public boolean isUsernameAvailable(String username) {
-        if (username == null || username.isBlank()) {
-            throw new ValidationException("Username cannot be null or blank");
-        }
-        return !userRepository.existsByUsername(username);
-    }
 
 }
 

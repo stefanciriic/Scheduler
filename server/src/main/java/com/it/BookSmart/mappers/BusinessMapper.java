@@ -11,9 +11,11 @@ import org.mapstruct.Named;
 public interface BusinessMapper {
 
     @Mapping(target = "owner", source = "ownerId", qualifiedByName = "mapOwnerIdToUser")
+    @Mapping(target = "image", ignore = true)
     Business toEntity(BusinessDto businessDto);
 
     @Mapping(target = "ownerId", source = "owner.id")
+    @Mapping(target = "imageUrl", source = "image.url")
     BusinessDto toDto(Business business);
 
     @Named("mapOwnerIdToUser")

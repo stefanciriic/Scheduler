@@ -31,4 +31,13 @@ public class CloudinaryService {
             throw new RuntimeException("Failed to upload image to Cloudinary", e);
         }
     }
+
+    public void deleteImage(String publicId) {
+        try {
+            cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete image from Cloudinary", e);
+        }
+    }
+
 }

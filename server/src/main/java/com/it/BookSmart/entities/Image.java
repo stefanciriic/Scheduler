@@ -15,13 +15,13 @@ public class Image {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String url;
 
-    @Column(nullable = true)
+    @Column
     private String publicId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "business_id", nullable = false)
+    @JoinColumn(name = "business_id")
     private Business business;
 }

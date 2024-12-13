@@ -1,10 +1,7 @@
 package com.it.BookSmart.employee;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.it.BookSmart.entities.Business;
-import com.it.BookSmart.entities.Employee;
-import com.it.BookSmart.entities.Role;
-import com.it.BookSmart.entities.User;
+import com.it.BookSmart.entities.*;
 import com.it.BookSmart.repositories.AppointmentRepository;
 import com.it.BookSmart.repositories.BusinessRepository;
 import com.it.BookSmart.repositories.EmployeeRepository;
@@ -63,9 +60,8 @@ public class EmployeeControllerIntegrationTest {
         employeeRepository.deleteAll();
         businessRepository.deleteAll();
 
-        // Create and save a business
         business = businessRepository.save(
-                new Business(null, "Test Business", "123 Test Street", "A test business", "9 AM - 5 PM", null)
+                new Business(null, "Test Business", "123 Test Street", "A test business", "9 AM - 5 PM",null)
         );
 
         // Initialize a valid EmployeeDto for use in tests

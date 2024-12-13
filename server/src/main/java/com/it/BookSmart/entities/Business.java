@@ -48,8 +48,9 @@ public class Business {
     @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ServiceType> serviceTypes;
 
-    @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> images;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "image_id")
+    private Image image;
 
     public Business(Long id, String name, String address, String description, String workingHours,User owner) {
         this.id = id;
@@ -63,5 +64,6 @@ public class Business {
     public Business(Long businessId) {
         this.id = businessId;
     }
+
 }
 

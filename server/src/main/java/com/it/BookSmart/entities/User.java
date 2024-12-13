@@ -35,6 +35,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "image_id")
+    private Image profileImage;
+
     public User(Long userId) {
         this.id = userId;
     }

@@ -25,4 +25,6 @@ public class UserDto {
 
     private String token;
 
+    private String imageUrl;
+
 }

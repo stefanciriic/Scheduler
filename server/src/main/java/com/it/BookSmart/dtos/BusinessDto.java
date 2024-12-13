@@ -31,5 +31,7 @@ public class BusinessDto {
 
     @NotNull(message = "Owner ID cannot be null")
     private Long ownerId;
+
+    private String imageUrl;
 }
 
