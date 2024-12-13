@@ -1,11 +1,12 @@
 package com.it.BookSmart.services;
 
 import com.it.BookSmart.dtos.BusinessDto;
+import com.it.BookSmart.dtos.ImageDto;
 import com.it.BookSmart.entities.Business;
 import com.it.BookSmart.entities.User;
 import com.it.BookSmart.exceptions.ResourceNotFoundException;
-import com.it.BookSmart.exceptions.ValidationException;
 import com.it.BookSmart.mappers.BusinessMapper;
+import com.it.BookSmart.mappers.ImageMapper;
 import com.it.BookSmart.repositories.BusinessRepository;
 import com.it.BookSmart.repositories.UserRepository;
 import jakarta.transaction.Transactional;
@@ -21,6 +22,7 @@ public class BusinessService {
     private final BusinessRepository businessRepository;
     private final UserRepository userRepository;
     private final BusinessMapper businessMapper;
+    private final ImageMapper imageMapper;
 
     public BusinessDto createBusiness(BusinessDto businessDto) {
         User owner = userRepository.findById(businessDto.getOwnerId())
@@ -65,6 +67,16 @@ public class BusinessService {
         return businessRepository.findById(id)
                 .map(businessMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + id));
+    }
+
+
+    public List<ImageDto> getImagesForBusiness(Long businessId) {
+        Business business = businessRepository.findById(businessId)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found"));
+
+        return business.getImages().stream()
+                .map(imageMapper::toDto)
+                .toList();
     }
 }
 

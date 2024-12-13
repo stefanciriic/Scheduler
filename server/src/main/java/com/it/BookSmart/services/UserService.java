@@ -14,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.nio.CharBuffer;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,8 +24,6 @@ public class UserService {
     private final UserMapper userMapper;
 
     public UserDto login(CredentialsDto credentialsDto) {
-        validateCredentials(credentialsDto);
-
         User user = userRepository.findByUsername(credentialsDto.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("Unknown user with username: " + credentialsDto.getUsername()));
 
@@ -38,8 +35,6 @@ public class UserService {
     }
 
     public UserDto register(SignUpDto userDto) {
-        validateSignUp(userDto);
-
         if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
             throw new ConflictException("Username already exists");
         }
@@ -68,28 +63,5 @@ public class UserService {
         return !userRepository.existsByUsername(username);
     }
 
-    private void validateCredentials(CredentialsDto credentialsDto) {
-        if (credentialsDto.getUsername() == null || credentialsDto.getUsername().isBlank()) {
-            throw new ValidationException("Username cannot be null or blank");
-        }
-        if (credentialsDto.getPassword() == null || credentialsDto.getPassword().isEmpty()) {
-            throw new ValidationException("Password cannot be null or blank");
-        }
-    }
-
-    private void validateSignUp(SignUpDto userDto) {
-        if (userDto.getUsername() == null || userDto.getUsername().isBlank()) {
-            throw new ValidationException("Username cannot be null or blank");
-        }
-        if (userDto.getPassword() == null || userDto.getPassword().isEmpty()) {
-            throw new ValidationException("Password cannot be null or blank");
-        }
-        if (userDto.getFirstName() == null || userDto.getFirstName().isBlank()) {
-            throw new ValidationException("First name cannot be null or blank");
-        }
-        if (userDto.getLastName() == null || userDto.getLastName().isBlank()) {
-            throw new ValidationException("Last name cannot be null or blank");
-        }
-    }
 }
 
