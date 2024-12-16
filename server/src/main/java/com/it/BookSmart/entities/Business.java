@@ -42,6 +42,15 @@ public class Business {
     @JoinColumn(name = "owner_id")
     private User owner;
 
+    //@NotBlank(message = "Contact phone cannot be blank")
+    @Size(max = 15, message = "Contact phone cannot exceed 15 characters")
+    @Column(length = 15)
+    private String contactPhone;
+
+    //@NotBlank(message = "City cannot be blank")
+    @Size(max = 100, message = "City cannot exceed 100 characters")
+    private String city;
+
     @OneToMany(mappedBy = "business", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Employee> employees;
 

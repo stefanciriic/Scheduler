@@ -6,6 +6,7 @@ import com.it.BookSmart.entities.Employee;
 import com.it.BookSmart.mappers.EmployeeMapper;
 import com.it.BookSmart.repositories.BusinessRepository;
 import com.it.BookSmart.repositories.EmployeeRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +41,7 @@ public class EmployeeService {
 
         return employeeMapper.toDto(repository.save(employee));
     }
-
+    @Transactional
     public EmployeeDto updateEmployee(Long id, EmployeeDto employeeDto) {
         Employee employee = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
@@ -55,6 +56,7 @@ public class EmployeeService {
         return employeeMapper.toDto(repository.save(employee));
     }
 
+    @Transactional
     public void deleteEmployee(Long id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Employee not found with id: " + id);

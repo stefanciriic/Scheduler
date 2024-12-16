@@ -61,7 +61,6 @@ public class AuthControllerIntegrationTest {
                 .andExpect(jsonPath("$.username").value(TEST_USERNAME))
                 .andExpect(jsonPath("$.token").isNotEmpty());
 
-        // Verify user exists in the database
         assertTrue(userRepository.existsByUsername(TEST_USERNAME));
     }
 

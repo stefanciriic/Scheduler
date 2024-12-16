@@ -4,6 +4,7 @@ import com.it.BookSmart.dtos.BusinessDto;
 import com.it.BookSmart.services.BusinessService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,7 +18,7 @@ public class BusinessController {
 
     private final BusinessService businessService;
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<BusinessDto>> getAllBusinesses() {
         return ResponseEntity.ok(businessService.getAllBusinesses());
     }
@@ -26,6 +27,17 @@ public class BusinessController {
     public ResponseEntity<BusinessDto> getBusinessById(@PathVariable Long id) {
         return ResponseEntity.ok(businessService.getBusinessById(id));
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<BusinessDto>> searchBusinesses(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<BusinessDto> businesses = businessService.searchBusinesses(search, page, size);
+        return ResponseEntity.ok(businesses);
+    }
+
 
     @PostMapping
     public ResponseEntity<BusinessDto> createBusiness(

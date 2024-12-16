@@ -56,7 +56,6 @@ public class EmployeeControllerIntegrationTest {
     @BeforeEach
     @Transactional
     public void setup() {
-        // Clear repositories to avoid data conflicts
         employeeRepository.deleteAll();
         businessRepository.deleteAll();
 
@@ -64,7 +63,6 @@ public class EmployeeControllerIntegrationTest {
                 new Business(null, "Test Business", "123 Test Street", "A test business", "9 AM - 5 PM",null)
         );
 
-        // Initialize a valid EmployeeDto for use in tests
         employeeDto = EmployeeDto.builder()
                 .name("John Doe")
                 .position("Manager")
@@ -89,7 +87,6 @@ public class EmployeeControllerIntegrationTest {
         EmployeeDto createdEmployee = objectMapper.readValue(response, EmployeeDto.class);
         createdEmployeeId = createdEmployee.getId();
 
-        // Verify employee is saved in the database
         Employee savedEmployee = employeeRepository.findById(createdEmployeeId).orElseThrow();
         assertEquals(employeeDto.getName(), savedEmployee.getName());
         assertEquals(employeeDto.getPosition(), savedEmployee.getPosition());
@@ -99,7 +96,6 @@ public class EmployeeControllerIntegrationTest {
     @Test
     @Order(2)
     public void testUpdateEmployee() throws Exception {
-        // Create an employee for updating
         testCreateEmployee();
 
         EmployeeDto updatedEmployeeDto = EmployeeDto.builder()
@@ -125,7 +121,6 @@ public class EmployeeControllerIntegrationTest {
     @Test
     @Order(3)
     public void testGetAllEmployees() throws Exception {
-        // Create an employee to populate the repository
         testCreateEmployee();
 
         mockMvc.perform(get("/api/employees")
@@ -140,7 +135,6 @@ public class EmployeeControllerIntegrationTest {
     @Test
     @Order(4)
     public void testDeleteEmployee() throws Exception {
-        // Create an employee to delete
         testCreateEmployee();
 
         mockMvc.perform(delete("/api/employees/" + createdEmployeeId)
@@ -154,7 +148,6 @@ public class EmployeeControllerIntegrationTest {
     @Test
     @Order(5)
     public void testGetEmployeesByBusiness() throws Exception {
-        // Create an employee associated with the business
         testCreateEmployee();
 
         mockMvc.perform(get("/api/employees/business/" + business.getId())

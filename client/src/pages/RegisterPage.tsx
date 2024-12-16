@@ -68,8 +68,9 @@ const RegisterPage: React.FC = () => {
         {error && <p className="text-red-500 mb-4">{error}</p>}
         {success && <p className="text-green-500 mb-4">{success}</p>}
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">First Name</label>
+          <label htmlFor="firstName" className="block text-gray-700 mb-2">First Name</label>
           <input
+            id="firstName"
             type="text"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
@@ -79,8 +80,9 @@ const RegisterPage: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Last Name</label>
+          <label htmlFor="lastName" className="block text-gray-700 mb-2">Last Name</label>
           <input
+            id="lastName"
             type="text"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
@@ -90,8 +92,9 @@ const RegisterPage: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Username</label>
+          <label htmlFor="username"  className="block text-gray-700 mb-2">Username</label>
           <input
+            id="username"
             type="text"
             value={username}
             onChange={handleUsernameChange}
@@ -112,8 +115,9 @@ const RegisterPage: React.FC = () => {
           )}
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Password</label>
+          <label htmlFor="password" className="block text-gray-700 mb-2">Password</label>
           <input
+            id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -123,8 +127,9 @@ const RegisterPage: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Confirm Password</label>
+          <label htmlFor="confirmPassword" className="block text-gray-700 mb-2">Confirm Password</label>
           <input
+            id="confirmPassword"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}

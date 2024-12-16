@@ -53,7 +53,6 @@ public class AppointmentIntegrationTest {
 
     @Test
     public void testCreateAppointment() throws Exception {
-        // Kreiraj User kao vlasnika
         User owner = new User();
         owner.setFirstName("Owner");
         owner.setLastName("Test");
@@ -62,7 +61,6 @@ public class AppointmentIntegrationTest {
         owner.setUsername("owneruser");
         User savedOwner = userRepository.save(owner);
 
-        // Kreiraj Business sa vlasnikom
         Business business = new Business();
         business.setName("Test Business");
         business.setAddress("123 Main Street");
@@ -71,7 +69,6 @@ public class AppointmentIntegrationTest {
         business.setOwner(savedOwner);
         Business savedBusiness = businessRepository.save(business);
 
-        // Kreiraj ServiceType
         ServiceType serviceType = new ServiceType();
         serviceType.setName("Oil Change");
         serviceType.setBusiness(savedBusiness);

@@ -19,7 +19,6 @@ class AppointmentMapperTest {
 
     @Test
     void testToEntity() {
-        // Prepare DTO
         AppointmentDto appointmentDto = new AppointmentDto();
         appointmentDto.setId(1L);
         appointmentDto.setUserId(2L);
@@ -27,10 +26,8 @@ class AppointmentMapperTest {
         appointmentDto.setEmployeeId(4L);
         appointmentDto.setAppointmentTime(LocalDateTime.now());
 
-        // Map to entity
         Appointment appointment = mapper.toEntity(appointmentDto);
 
-        // Assertions
         assertNotNull(appointment);
         assertEquals(appointmentDto.getId(), appointment.getId());
         assertEquals(appointmentDto.getUserId(), appointment.getUser().getId());
@@ -41,7 +38,6 @@ class AppointmentMapperTest {
 
     @Test
     void testToDto() {
-        // Prepare Entity
         Appointment appointment = new Appointment();
         appointment.setId(1L);
         appointment.setUser(new User(2L));
@@ -49,10 +45,8 @@ class AppointmentMapperTest {
         appointment.setEmployee(new Employee(4L));
         appointment.setAppointmentTime(LocalDateTime.now());
 
-        // Map to DTO
         AppointmentDto appointmentDto = mapper.toDto(appointment);
 
-        // Assertions
         assertNotNull(appointmentDto);
         assertEquals(appointment.getId(), appointmentDto.getId());
         assertEquals(appointment.getUser().getId(), appointmentDto.getUserId());
@@ -63,7 +57,6 @@ class AppointmentMapperTest {
 
     @Test
     void testToEntityWithNullDto() {
-        // Test null mapping
         Appointment appointment = mapper.toEntity(null);
 
         assertNull(appointment);
@@ -71,7 +64,6 @@ class AppointmentMapperTest {
 
     @Test
     void testToDtoWithNullEntity() {
-        // Test null mapping
         AppointmentDto appointmentDto = mapper.toDto(null);
 
         assertNull(appointmentDto);

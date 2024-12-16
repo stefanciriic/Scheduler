@@ -1,5 +1,6 @@
 package com.it.BookSmart.dtos;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -29,9 +30,18 @@ public class BusinessDto {
     @NotBlank(message = "Working hours cannot be blank")
     private String workingHours;
 
+    //@NotBlank(message = "City cannot be blank")
+    @Size(max = 100, message = "City cannot exceed 100 characters")
+    private String city;
+
+    @Size(max = 15, message = "Contact phone cannot exceed 15 characters")
+    @Column(length = 15)
+    private String contactPhone;
+
     @NotNull(message = "Owner ID cannot be null")
     private Long ownerId;
 
     private String imageUrl;
+
 }
 

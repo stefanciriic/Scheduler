@@ -72,6 +72,7 @@ public class AppointmentService {
         return appointmentMapper.toDto(savedAppointment);
     }
 
+    @Transactional
     public AppointmentDto updateAppointment(Long id, AppointmentDto appointmentDto) {
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + id));
@@ -104,6 +105,7 @@ public class AppointmentService {
         return appointmentMapper.toDto(appointmentRepository.save(appointment));
     }
 
+    @Transactional
     public void deleteAppointment(Long id) {
         if (!appointmentRepository.existsById(id)) {
             throw new ResourceNotFoundException("Appointment not found with id: " + id);

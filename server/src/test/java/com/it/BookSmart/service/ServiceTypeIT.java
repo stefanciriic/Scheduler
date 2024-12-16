@@ -77,7 +77,6 @@ public class ServiceTypeIT {
         ServiceTypeDto createdServiceType = objectMapper.readValue(response, ServiceTypeDto.class);
         createdServiceTypeId = createdServiceType.getId();
 
-        // Verify saved entity
         ServiceType savedServiceType = serviceTypeRepository.findById(createdServiceTypeId).orElseThrow();
         assertEquals(serviceTypeDto.getName(), savedServiceType.getName());
         assertEquals(serviceTypeDto.getDescription(), savedServiceType.getDescription());
@@ -105,7 +104,6 @@ public class ServiceTypeIT {
                 .andExpect(jsonPath("$.description").value(updatedServiceTypeDto.getDescription()))
                 .andExpect(jsonPath("$.price").value(updatedServiceTypeDto.getPrice()));
 
-        // Verify updated entity
         ServiceType updatedServiceType = serviceTypeRepository.findById(createdServiceTypeId).orElseThrow();
         assertEquals(updatedServiceTypeDto.getName(), updatedServiceType.getName());
         assertEquals(updatedServiceTypeDto.getDescription(), updatedServiceType.getDescription());
@@ -130,7 +128,6 @@ public class ServiceTypeIT {
                 .andDo(print())
                 .andExpect(status().isNoContent());
 
-        // Verify deletion
         assertFalse(serviceTypeRepository.findById(createdServiceTypeId).isPresent());
     }
 }

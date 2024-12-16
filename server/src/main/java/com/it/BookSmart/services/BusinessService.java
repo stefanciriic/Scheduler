@@ -12,6 +12,10 @@ import com.it.BookSmart.repositories.BusinessRepository;
 import com.it.BookSmart.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,27 +31,25 @@ public class BusinessService {
     private final ImageMapper imageMapper;
     private final CloudinaryService cloudinaryService;
 
+    @Transactional
     public BusinessDto createBusiness(BusinessDto businessDto, MultipartFile imageFile) {
         User owner = userRepository.findById(businessDto.getOwnerId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + businessDto.getOwnerId()));
 
-        // Kreiraj biznis iz DTO-a
         Business business = businessMapper.toEntity(businessDto);
         business.setOwner(owner);
 
-        // Prvo sačuvaj biznis u bazi
         Business savedBusiness = businessRepository.save(business);
 
-        // Upload slike na Cloudinary ako postoji fajl
         if (imageFile != null && !imageFile.isEmpty()) {
             String imageUrl = cloudinaryService.uploadImage(imageFile, "business-logos");
             Image image = Image.builder()
                     .url(imageUrl)
-                    .business(savedBusiness) // Poveži sliku sa kreiranim biznisom
+                    .business(savedBusiness)
                     .build();
 
             savedBusiness.setImage(image);
-            businessRepository.save(savedBusiness); // Sačuvaj ažurirani biznis
+            businessRepository.save(savedBusiness);
         }
 
         return businessMapper.toDto(savedBusiness);
@@ -58,26 +60,21 @@ public class BusinessService {
         Business existingBusiness = businessRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + id));
 
-        // Ažuriraj podatke o biznisu
         Business updatedBusiness = businessMapper.toEntity(businessDto);
         updatedBusiness.setId(existingBusiness.getId());
         updatedBusiness.setOwner(existingBusiness.getOwner());
 
-        // Ažuriraj sliku ako je nova slika prosleđena
         if (newImageFile != null && !newImageFile.isEmpty()) {
             if (existingBusiness.getImage() != null) {
-                // Obriši staru sliku sa Cloudinary-ja
                 cloudinaryService.deleteImage(existingBusiness.getImage().getPublicId());
             }
 
-            // Upload nove slike
             String newImageUrl = cloudinaryService.uploadImage(newImageFile, "business-logos");
             Image newImage = Image.builder()
                     .url(newImageUrl)
                     .build();
-            updatedBusiness.setImage(newImage); // Postavljamo novu sliku
+            updatedBusiness.setImage(newImage);
         } else {
-            // Zadrži postojeću sliku ako nova nije prosleđena
             updatedBusiness.setImage(existingBusiness.getImage());
         }
 
@@ -98,6 +95,26 @@ public class BusinessService {
                 .map(businessMapper::toDto)
                 .toList();
     }
+
+    public Page<BusinessDto> searchBusinesses(String search, int page, int size) {
+        Specification<Business> spec = Specification.where(null);
+
+        if (search != null && !search.isEmpty()) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.or(
+                            criteriaBuilder.like(root.get("name"), "%" + search + "%"),
+                            criteriaBuilder.like(root.get("description"), "%" + search + "%"),
+                            criteriaBuilder.like(root.get("city"), "%" + search + "%"),
+                            criteriaBuilder.like(root.get("address"), "%" + search + "%")
+                    )
+            );
+        }
+        Pageable pageable = PageRequest.of(page, size);
+
+        return businessRepository.findAll(spec, pageable)
+                .map(businessMapper::toDto);
+    }
+
 
     public BusinessDto getBusinessById(Long id) {
         return businessRepository.findById(id)
