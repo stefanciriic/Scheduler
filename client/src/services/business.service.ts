@@ -6,7 +6,10 @@ export const fetchAllBusinesses = async (): Promise<Business[]> => {
   return response.data;
 };
 
-
+export const fetchBusinessById = async (id: number): Promise<Business> => {
+  const response = await axiosInstance.get<Business>(`/api/businesses/${id}`);
+  return response.data;
+};
 
 export const searchBusinesses = async (
     search: string

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { fetchAllBusinesses, searchBusinesses } from "../services/business.service";
 import { Business } from "../models/business.model";
+import BusinessCard from "../components/shared/BusinessCard";
 
 const HomePage = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -41,6 +41,7 @@ const HomePage = () => {
 
   if (loading) return <p>Loading businesses...</p>;
 
+
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-2xl font-bold mb-4">Welcome to Our Businesses</h1>
@@ -66,24 +67,7 @@ const HomePage = () => {
       {/* Grid Layout for Businesses */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {businesses.map((business) => (
-          <div key={business.id} className="border rounded shadow-md p-4">
-            <img
-              src={business.imageUrl || "default-business-image.jpg"}
-              alt={business.name}
-              className="w-full h-40 object-cover rounded"
-            />
-            <h2 className="text-lg font-bold mt-2">{business.name}</h2>
-            <p className="text-gray-600">
-              {business.city}, {business.district}
-            </p>
-            <p className="text-gray-600">{business.description.slice(0, 50)}...</p>
-            <Link
-              to={`/businesses/${business.id}`}
-              className="text-blue-500 hover:underline mt-2 block"
-            >
-              View Details
-            </Link>
-          </div>
+          <BusinessCard key={business.id} business={business} />
         ))}
       </div>
     </div>

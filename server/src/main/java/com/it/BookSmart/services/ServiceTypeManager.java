@@ -24,6 +24,12 @@ public class ServiceTypeManager {
 
     private final BusinessRepository businessRepository;
 
+    public List<ServiceTypeDto> getServicesByBusinessId(Long businessId) {
+        return repository.findByBusinessId(businessId).stream()
+                .map(mapper::toDto)
+                .toList();
+    }
+
     public ServiceTypeDto createServiceType(ServiceTypeDto serviceTypeDto) {
         if (repository.existsByNameAndBusinessId(serviceTypeDto.getName(), serviceTypeDto.getBusinessId())) {
             throw new ConflictException("Service type with the same name already exists in the business");

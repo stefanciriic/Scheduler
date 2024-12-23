@@ -4,6 +4,7 @@ import HomePage from '../pages/HomePage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import ErrorPage from '../pages/ErrorPage';
+import BusinessDetailsPage from '../pages/BusinessDetailsPage';
 
 const Routes: RouteObject[] = [
   {
@@ -30,6 +31,11 @@ const Routes: RouteObject[] = [
     path: '*', 
     element: <ErrorPage />,
   },
+  {
+    path: "/businesses/:id",
+    element: <BusinessDetailsPage />,
+  },
+  
 ];
 
 export default Routes;

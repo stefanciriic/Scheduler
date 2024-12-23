@@ -1,3 +1,5 @@
+import { ServiceType } from "./service.type";
+
 export interface Business {
     id: number;
     name: string;
@@ -8,5 +10,6 @@ export interface Business {
     district: string;
     contactPhone?: string; 
     imageUrl?: string; 
+    services?: ServiceType[];
   }
   
