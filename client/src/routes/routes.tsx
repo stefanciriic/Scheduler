@@ -6,6 +6,8 @@ import RegisterPage from '../pages/RegisterPage';
 import ErrorPage from '../pages/ErrorPage';
 import BusinessDetailsPage from '../pages/BusinessDetailsPage';
 import MyReservationsPage from '../pages/MyReservationsPage';
+import AdminDashboard from '../pages/AdminDashboard';
+import BusinessOwnerDashboard from '../pages/BusinessOwnerDashboard';
 
 const Routes: RouteObject[] = [
   {
@@ -45,6 +47,22 @@ const Routes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         <MyReservationsPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/admin",
+    element: (
+      <ProtectedRoute>
+        <AdminDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/business-dashboard",
+    element: (
+      <ProtectedRoute>
+        <BusinessOwnerDashboard />
       </ProtectedRoute>
     ),
   },

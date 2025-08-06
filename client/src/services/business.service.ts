@@ -26,3 +26,7 @@ export const searchBusinesses = async (
     }
   };
   
+export const fetchBusinessesByOwner = async (ownerId: number): Promise<Business[]> => {
+  const response = await axiosInstance.get<Business[]>(`/api/businesses/owner/${ownerId}`);
+  return response.data;
+};

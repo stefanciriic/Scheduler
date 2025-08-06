@@ -122,6 +122,12 @@ public class BusinessService {
                 .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + id));
     }
 
+    public List<BusinessDto> getBusinessesByOwner(Long ownerId) {
+        return businessRepository.findByOwnerId(ownerId)
+                .stream()
+                .map(businessMapper::toDto)
+                .toList();
+    }
 
 }
 

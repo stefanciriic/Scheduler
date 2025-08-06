@@ -9,7 +9,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    @Mapping(target = "imageUrl", source = "profileImage.url") UserDto toUserDto(User user);
+    @Mapping(target = "imageUrl", source = "profileImage.url")
+    UserDto toUserDto(User user);
 
     @Mapping(target = "profileImage", ignore = true)
     @Mapping(target = "password", ignore = true)
