@@ -7,7 +7,6 @@ export interface Business {
     description: string;
     workingHours: string;
     city: string;
-    district: string;
     contactPhone?: string; 
     imageUrl?: string; 
     services?: ServiceType[];

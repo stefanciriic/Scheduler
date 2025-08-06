@@ -18,6 +18,9 @@ const Header: React.FC = () => {
       <div className="flex items-center space-x-4">
         {user ? (
           <>
+            <Link to="/my-reservations" className="text-blue-300 hover:underline">
+              My Reservations
+            </Link>
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
                 {user.firstName.charAt(0)}

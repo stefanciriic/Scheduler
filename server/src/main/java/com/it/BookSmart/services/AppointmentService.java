@@ -44,6 +44,17 @@ public class AppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + id));
     }
 
+    public List<AppointmentDto> getAppointmentsByUserId(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User not found with id: " + userId);
+        }
+        
+        return appointmentRepository.findByUserIdOrderByAppointmentTimeDesc(userId)
+                .stream()
+                .map(appointmentMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public AppointmentDto createAppointment(AppointmentDto appointmentDto) {
         Appointment appointment = appointmentMapper.toEntity(appointmentDto);

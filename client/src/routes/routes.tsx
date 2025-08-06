@@ -5,6 +5,7 @@ import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import ErrorPage from '../pages/ErrorPage';
 import BusinessDetailsPage from '../pages/BusinessDetailsPage';
+import MyReservationsPage from '../pages/MyReservationsPage';
 
 const Routes: RouteObject[] = [
   {
@@ -33,7 +34,19 @@ const Routes: RouteObject[] = [
   },
   {
     path: "/businesses/:id",
-    element: <BusinessDetailsPage />,
+    element: (
+      <ProtectedRoute>
+        <BusinessDetailsPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/my-reservations",
+    element: (
+      <ProtectedRoute>
+        <MyReservationsPage />
+      </ProtectedRoute>
+    ),
   },
   
 ];
