@@ -64,4 +64,9 @@ public class BusinessController {
         businessService.deleteBusiness(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<List<BusinessDto>> getBusinessesByOwner(@PathVariable Long ownerId) {
+        return ResponseEntity.ok(businessService.getBusinessesByOwner(ownerId));
+    }
 }

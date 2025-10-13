@@ -65,11 +65,20 @@ const HomePage = () => {
       </div>
 
       {/* Grid Layout for Businesses */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {businesses.map((business) => (
           <BusinessCard key={business.id} business={business} />
         ))}
       </div>
+      
+      {businesses.length === 0 && !loading && (
+        <div className="text-center py-8">
+          <p className="text-gray-600 text-lg">No businesses found.</p>
+          {search && (
+            <p className="text-gray-500 mt-2">Try adjusting your search terms.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

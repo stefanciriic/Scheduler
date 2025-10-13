@@ -26,6 +26,11 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getAppointmentById(id));
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<AppointmentDto>> getAppointmentsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsByUserId(userId));
+    }
+
     @PostMapping
     public ResponseEntity<AppointmentDto> createAppointment(@RequestBody @Valid AppointmentDto appointmentDto) {
         return ResponseEntity.ok(appointmentService.createAppointment(appointmentDto));
