@@ -11,6 +11,7 @@ const RegisterPage: React.FC = () => {
   const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState<'USER' | 'BUSINESS_OWNER'>('USER');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -50,12 +51,18 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      const user = await register({ firstName, lastName, username, password });
+      const user = await register({ firstName, lastName, username, password, role });
       login(user);
       localStorage.setItem("token", user.token);
 
-      setSuccess(`Welcome, ${user.firstName}! Redirecting to home...`);
-      setTimeout(() => navigate("/"), 2000);
+      setSuccess(`Welcome, ${user.firstName}! Redirecting...`);
+      setTimeout(() => {
+        if (user.role === 'BUSINESS_OWNER') {
+          navigate("/dashboard");
+        } else {
+          navigate("/");
+        }
+      }, 2000);
     } catch (err: unknown) {
       setError(handleApiError(err));
     }
@@ -140,6 +147,31 @@ const RegisterPage: React.FC = () => {
           {password !== confirmPassword && confirmPassword && (
              <p className="text-red-500 text-sm mt-1">Passwords do not match</p>
           )}
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 mb-2">Register as</label>
+          <div className="flex gap-4">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                value="USER"
+                checked={role === 'USER'}
+                onChange={(e) => setRole(e.target.value as 'USER')}
+                className="mr-2"
+              />
+              <span>Customer</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                value="BUSINESS_OWNER"
+                checked={role === 'BUSINESS_OWNER'}
+                onChange={(e) => setRole(e.target.value as 'BUSINESS_OWNER')}
+                className="mr-2"
+              />
+              <span>Business Owner</span>
+            </label>
+          </div>
         </div>
         <button
           type="submit"

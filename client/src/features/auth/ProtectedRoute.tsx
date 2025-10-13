@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const user = useAuthStore((state) => state.user); // Proverava prisustvo korisnika
+  const user = useAuthStore((state) => state.user); 
   const location = useLocation();
 
   if (!user) {

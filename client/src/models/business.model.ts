@@ -7,9 +7,11 @@ export interface Business {
     description: string;
     workingHours: string;
     city: string;
-    district: string;
     contactPhone?: string; 
     imageUrl?: string; 
+    ownerId: number;
+    employeeIds: number[];
+    serviceTypeIds: number[];
     services?: ServiceType[];
   }
   

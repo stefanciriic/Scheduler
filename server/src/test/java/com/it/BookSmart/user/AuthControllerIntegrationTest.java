@@ -52,14 +52,15 @@ public class AuthControllerIntegrationTest {
     @Test
     @Order(1)
     void testRegisterUser() throws Exception {
-        SignUpDto signUpDto = new SignUpDto("Test", "User", TEST_USERNAME, TEST_PASSWORD);
+        SignUpDto signUpDto = new SignUpDto("Test", "User", TEST_USERNAME, TEST_PASSWORD, "USER");
 
         mockMvc.perform(post(REGISTER_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(signUpDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.username").value(TEST_USERNAME))
-                .andExpect(jsonPath("$.token").isNotEmpty());
+                .andExpect(jsonPath("$.token").isNotEmpty())
+                .andExpect(jsonPath("$.role").value("USER"));  // Proveri i role
 
         assertTrue(userRepository.existsByUsername(TEST_USERNAME));
     }
@@ -105,7 +106,7 @@ public class AuthControllerIntegrationTest {
     @Test
     @Order(5)
     void testRegisterUserWithDuplicateUsername() throws Exception {
-        SignUpDto signUpDto = new SignUpDto("Test", "User Duplicate", TEST_USERNAME, TEST_PASSWORD);
+        SignUpDto signUpDto = new SignUpDto("Test", "User Duplicate", TEST_USERNAME, TEST_PASSWORD, "USER");
 
         mockMvc.perform(post(REGISTER_URL)
                         .contentType(MediaType.APPLICATION_JSON)

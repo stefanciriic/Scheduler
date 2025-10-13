@@ -9,7 +9,7 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const { login } = useAuthStore(); // Koristi Zustand Store za prijavu
+  const { login } = useAuthStore(); 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,10 +19,15 @@ const LoginPage: React.FC = () => {
       const user = await loginApi({ username, password });
 
       login(user);
+      console.log("Logging in user:", user); 
 
       localStorage.setItem("token", user.token);
 
-      navigate("/");
+      if (user.role === 'BUSINESS_OWNER' || user.role === 'ADMIN') {
+        navigate("/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err: unknown) {
       setError(handleApiError(err));
     }

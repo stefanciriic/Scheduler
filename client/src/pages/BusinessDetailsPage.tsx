@@ -45,7 +45,6 @@ const BusinessDetailsPage = () => {
 
   return (
     <div className="container mx-auto py-8">
-      {/* Business Details Section */}
       <div className="bg-white shadow-md rounded-lg p-6 mb-6">
         <div className="flex flex-col md:flex-row">
           <img
@@ -76,7 +75,6 @@ const BusinessDetailsPage = () => {
         </div>
       </div>
 
-      {/* Services Section */}
       <div>
         <h2 className="text-2xl font-bold mb-4">Services</h2>
         {services.length > 0 ? (

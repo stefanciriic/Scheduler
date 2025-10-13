@@ -38,6 +38,14 @@ public class BusinessService {
 
         Business business = businessMapper.toEntity(businessDto);
         business.setOwner(owner);
+        
+        // Initialize empty lists to avoid null pointer exceptions
+        if (business.getEmployees() == null) {
+            business.setEmployees(new java.util.ArrayList<>());
+        }
+        if (business.getServiceTypes() == null) {
+            business.setServiceTypes(new java.util.ArrayList<>());
+        }
 
         Business savedBusiness = businessRepository.save(business);
 
@@ -63,6 +71,16 @@ public class BusinessService {
         Business updatedBusiness = businessMapper.toEntity(businessDto);
         updatedBusiness.setId(existingBusiness.getId());
         updatedBusiness.setOwner(existingBusiness.getOwner());
+        
+        // Initialize empty lists to avoid null pointer exceptions
+        if (updatedBusiness.getEmployees() == null) {
+            updatedBusiness.setEmployees(existingBusiness.getEmployees() != null ? 
+                existingBusiness.getEmployees() : new java.util.ArrayList<>());
+        }
+        if (updatedBusiness.getServiceTypes() == null) {
+            updatedBusiness.setServiceTypes(existingBusiness.getServiceTypes() != null ? 
+                existingBusiness.getServiceTypes() : new java.util.ArrayList<>());
+        }
 
         if (newImageFile != null && !newImageFile.isEmpty()) {
             if (existingBusiness.getImage() != null) {
@@ -122,6 +140,12 @@ public class BusinessService {
                 .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + id));
     }
 
+    public List<BusinessDto> getBusinessesByOwnerId(Long ownerId) {
+        return businessRepository.findByOwnerId(ownerId)
+                .stream()
+                .map(businessMapper::toDto)
+                .toList();
+    }
 
 }
 

@@ -3,9 +3,9 @@ package com.it.BookSmart.apointment;
 import com.it.BookSmart.dtos.AppointmentDto;
 import com.it.BookSmart.entities.Appointment;
 import com.it.BookSmart.entities.Employee;
+import com.it.BookSmart.entities.Role;
 import com.it.BookSmart.entities.ServiceType;
 import com.it.BookSmart.entities.User;
-import com.it.BookSmart.exceptions.ValidationException;
 import com.it.BookSmart.mappers.AppointmentMapper;
 import com.it.BookSmart.repositories.AppointmentRepository;
 import com.it.BookSmart.repositories.EmployeeRepository;
@@ -18,7 +18,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -56,7 +55,7 @@ class AppointmentServiceTest {
 
     @BeforeEach
     void setUp() {
-        user = new User(1L, "John", "Doe", "john.doe", "password", null,null);
+        user = new User(1L, "John", "Doe", "john.doe", "password", Role.USER,null, null);
         employee = new Employee(1L, "Jane Smith", "Mechanic", null);
 
         serviceType = new ServiceType(1L, "Oil Change", "Car oil change service", 212.43, null, employee);

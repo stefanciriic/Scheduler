@@ -10,14 +10,17 @@ export interface Credentials {
     lastName: string;
     username: string;
     password: string;
+    role?: 'USER' | 'BUSINESS_OWNER';
   }
   
   export interface User {
-    id: string;
+    id: number;
     firstName: string;
     lastName: string;
     username: string;
     token: string;
+    role: 'ADMIN' | 'BUSINESS_OWNER' | 'EMPLOYEE' | 'USER';
+    businessId?: number; // Optional - samo za BUSINESS_OWNER
   }
 
   export const login = async (credentials: Credentials): Promise<User> => {

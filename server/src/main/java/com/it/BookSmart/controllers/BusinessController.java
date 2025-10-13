@@ -28,6 +28,11 @@ public class BusinessController {
         return ResponseEntity.ok(businessService.getBusinessById(id));
     }
 
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<List<BusinessDto>> getBusinessesByOwnerId(@PathVariable Long ownerId) {
+        return ResponseEntity.ok(businessService.getBusinessesByOwnerId(ownerId));
+    }
+
     @GetMapping("/search")
     public ResponseEntity<Page<BusinessDto>> searchBusinesses(
             @RequestParam(required = false) String search,
@@ -47,8 +52,11 @@ public class BusinessController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BusinessDto> updateBusiness(@PathVariable Long id, @RequestBody @Valid BusinessDto businessDto,  @RequestPart(value = "file", required = false) MultipartFile file) {
-        return ResponseEntity.ok(businessService.updateBusiness(id, businessDto,file));
+    public ResponseEntity<BusinessDto> updateBusiness(
+            @PathVariable Long id, 
+            @RequestPart("business") @Valid BusinessDto businessDto, 
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        return ResponseEntity.ok(businessService.updateBusiness(id, businessDto, file));
     }
 
     @DeleteMapping("/{id}")

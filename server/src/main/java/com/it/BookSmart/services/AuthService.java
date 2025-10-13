@@ -3,6 +3,7 @@ package com.it.BookSmart.services;
 import com.it.BookSmart.dtos.CredentialsDto;
 import com.it.BookSmart.dtos.SignUpDto;
 import com.it.BookSmart.dtos.UserDto;
+import com.it.BookSmart.entities.Role;
 import com.it.BookSmart.entities.User;
 import com.it.BookSmart.exceptions.ConflictException;
 import com.it.BookSmart.exceptions.ResourceNotFoundException;
@@ -40,6 +41,12 @@ public class AuthService {
         }
 
         User user = userMapper.signUpToUser(userDto);
+        if (userDto.getRole() != null && !userDto.getRole().isEmpty()) {
+            user.setRole(Role.valueOf(userDto.getRole()));
+        } else {
+            user.setRole(Role.USER);
+        }
+
         user.setPassword(passwordEncoder.encode(CharBuffer.wrap(userDto.getPassword())));
 
         User savedUser = userRepository.save(user);

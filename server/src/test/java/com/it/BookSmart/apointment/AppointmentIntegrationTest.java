@@ -1,4 +1,4 @@
-package com.it.BookSmart;
+package com.it.BookSmart.apointment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.it.BookSmart.dtos.AppointmentDto;

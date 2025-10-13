@@ -11,7 +11,6 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@AllArgsConstructor
 @NoArgsConstructor
 public class Business {
     @Id
@@ -38,16 +37,14 @@ public class Business {
     @Column(nullable = false)
     private String workingHours;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "owner_id")
     private User owner;
 
-    //@NotBlank(message = "Contact phone cannot be blank")
     @Size(max = 15, message = "Contact phone cannot exceed 15 characters")
     @Column(length = 15)
     private String contactPhone;
 
-    //@NotBlank(message = "City cannot be blank")
     @Size(max = 100, message = "City cannot exceed 100 characters")
     private String city;
 

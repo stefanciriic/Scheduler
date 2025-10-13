@@ -20,6 +20,7 @@ public interface AppointmentMapper {
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "serviceId", source = "serviceType.id")
     @Mapping(target = "employeeId", source = "employee.id")
+    @Mapping(target = "serviceName", source = "serviceType.name")
     AppointmentDto toDto(Appointment appointment);
 
     @Named("mapUserIdToUser")

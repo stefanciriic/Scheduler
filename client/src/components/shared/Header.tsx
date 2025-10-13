@@ -18,6 +18,14 @@ const Header: React.FC = () => {
       <div className="flex items-center space-x-4">
         {user ? (
           <>
+            {(user.role === 'BUSINESS_OWNER' || user.role === 'ADMIN') && (
+              <Link
+                to="/dashboard"
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+              >
+                Dashboard
+              </Link>
+            )}
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
                 {user.firstName.charAt(0)}

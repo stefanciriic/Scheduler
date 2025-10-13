@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -30,7 +32,6 @@ public class BusinessDto {
     @NotBlank(message = "Working hours cannot be blank")
     private String workingHours;
 
-    //@NotBlank(message = "City cannot be blank")
     @Size(max = 100, message = "City cannot exceed 100 characters")
     private String city;
 
@@ -42,6 +43,9 @@ public class BusinessDto {
     private Long ownerId;
 
     private String imageUrl;
+
+    private List<Long> employeeIds;
+    private List<Long> serviceTypeIds;
 
 }
 

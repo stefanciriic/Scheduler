@@ -9,10 +9,15 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    @Mapping(target = "imageUrl", source = "profileImage.url") UserDto toUserDto(User user);
+    @Mapping(target = "imageUrl", source = "profileImage.url")
+    @Mapping(target = "token", ignore = true)
+    UserDto toUserDto(User user);
 
     @Mapping(target = "profileImage", ignore = true)
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "businessId", ignore = true)
     User signUpToUser(SignUpDto signUpDto);
 
 }

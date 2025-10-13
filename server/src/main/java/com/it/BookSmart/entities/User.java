@@ -39,6 +39,9 @@ public class User {
     @JoinColumn(name = "image_id")
     private Image profileImage;
 
+    @Column(name = "business_id")
+    private Long businessId;
+
     public User(Long userId) {
         this.id = userId;
     }
