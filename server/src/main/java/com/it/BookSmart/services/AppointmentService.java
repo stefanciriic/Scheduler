@@ -1,12 +1,8 @@
 package com.it.BookSmart.services;
 
 import com.it.BookSmart.dtos.AppointmentDto;
-import com.it.BookSmart.entities.Appointment;
-import com.it.BookSmart.entities.Employee;
-import com.it.BookSmart.entities.ServiceType;
-import com.it.BookSmart.entities.User;
+import com.it.BookSmart.entities.*;
 import com.it.BookSmart.exceptions.ResourceNotFoundException;
-import com.it.BookSmart.exceptions.ValidationException;
 import com.it.BookSmart.mappers.AppointmentMapper;
 import com.it.BookSmart.repositories.AppointmentRepository;
 import com.it.BookSmart.repositories.EmployeeRepository;
@@ -15,8 +11,6 @@ import com.it.BookSmart.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,8 +43,21 @@ public class AppointmentService {
             throw new ResourceNotFoundException("User not found with id: " + userId);
         }
         
+        // Users see only NON-CANCELED appointments
         return appointmentRepository.findByUserIdOrderByAppointmentTimeDesc(userId)
                 .stream()
+                .filter(appointment -> appointment.getStatus() != AppointmentStatus.CANCELED)
+                .map(appointmentMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<AppointmentDto> getAppointmentsByBusinessId(Long businessId) {
+        // Get all appointments where the service belongs to the specified business
+        return appointmentRepository.findAll()
+                .stream()
+                .filter(appointment -> appointment.getServiceType() != null 
+                        && appointment.getServiceType().getBusiness() != null
+                        && appointment.getServiceType().getBusiness().getId().equals(businessId))
                 .map(appointmentMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -118,9 +125,21 @@ public class AppointmentService {
 
     @Transactional
     public void deleteAppointment(Long id) {
-        if (!appointmentRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Appointment not found with id: " + id);
-        }
-        appointmentRepository.deleteById(id);
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + id));
+        
+        // Soft delete: mark as CANCELED instead of deleting
+        appointment.setStatus(AppointmentStatus.CANCELED);
+        appointment.setCanceledAt(LocalDateTime.now());
+        appointmentRepository.save(appointment);
+    }
+
+    @Transactional
+    public void permanentlyDeleteAppointment(Long id) {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + id));
+        
+        // Hard delete: permanently remove from database
+        appointmentRepository.delete(appointment);
     }
 }

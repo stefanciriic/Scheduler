@@ -29,8 +29,6 @@ public class UserDto {
 
     private String imageUrl;
 
-    private String role;
-
     private Long businessId;
 
 }

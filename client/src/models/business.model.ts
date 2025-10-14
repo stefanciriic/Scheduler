@@ -1,5 +1,3 @@
-import { ServiceType } from "./service.type";
-
 export interface Business {
     id: number;
     name: string;
@@ -12,6 +10,5 @@ export interface Business {
     ownerId: number;
     employeeIds: number[];
     serviceTypeIds: number[];
-    services?: ServiceType[];
   }
   

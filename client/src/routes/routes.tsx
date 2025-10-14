@@ -1,6 +1,7 @@
 import { Navigate, RouteObject } from 'react-router-dom';
 import ProtectedRoute from '../features/auth/ProtectedRoute';
 import OwnerRoute from '../features/auth/OwnerRoute';
+import AdminRoute from '../features/auth/AdminRoute';
 import HomePage from '../pages/HomePage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
@@ -11,6 +12,8 @@ import MyBusinessPage from '../pages/MyBusinessPage';
 import ServicesManagementPage from '../pages/ServicesManagementPage';
 import EmployeesManagementPage from '../pages/EmployeesManagementPage';
 import ReservationsPage from '../pages/ReservationsPage';
+import MyReservationsPage from '../pages/MyReservationsPage';
+import AdminDashboard from '../pages/AdminDashboard';
 
 const Routes: RouteObject[] = [
   {
@@ -35,7 +38,19 @@ const Routes: RouteObject[] = [
   },
   {
     path: '/businesses/:id',
-    element: <BusinessDetailsPage />,
+    element: (
+      <ProtectedRoute>
+        <BusinessDetailsPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/my-reservations',
+    element: (
+      <ProtectedRoute>
+        <MyReservationsPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/dashboard',
@@ -75,6 +90,14 @@ const Routes: RouteObject[] = [
       <OwnerRoute>
         <ReservationsPage />
       </OwnerRoute>
+    ),
+  },
+  {
+    path: '/admin',
+    element: (
+      <AdminRoute>
+        <AdminDashboard />
+      </AdminRoute>
     ),
   },
   {

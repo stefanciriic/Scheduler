@@ -66,9 +66,9 @@ const BusinessDetailsPage = () => {
             <p className="text-gray-700 mt-2">
               <strong>Working Hours:</strong> {business.workingHours}
             </p>
-            {business.city && business.district && (
+            {business.city && (
               <p className="text-gray-700 mt-2">
-                <strong>Location:</strong> {business.city}, {business.district}
+                <strong>Location:</strong> {business.city}
               </p>
             )}
           </div>

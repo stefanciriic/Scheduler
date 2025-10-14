@@ -1,15 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-interface User {
-  id: number;
-  firstName: string;
-  lastName: string;
-  username: string;
-  token: string;
-  role: 'ADMIN' | 'BUSINESS_OWNER' | 'EMPLOYEE' | 'USER';
-  businessId?: number; 
-}
+import { User } from '../models/user.model';
 
 interface AuthState {
   user: User | null;

@@ -36,5 +36,10 @@ public class Appointment {
     @Version
     private Integer version;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AppointmentStatus status = AppointmentStatus.SCHEDULED;
+
+    private LocalDateTime canceledAt;
 
 }

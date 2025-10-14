@@ -19,3 +19,13 @@ export const updateEmployee = async (id: number, employee: Employee): Promise<Em
 export const deleteEmployee = async (id: number): Promise<void> => {
   await axiosInstance.delete(`/api/employees/${id}`);
 };
+
+export const fetchEmployeeById = async (id: number): Promise<Employee> => {
+  const response = await axiosInstance.get<Employee>(`/api/employees/${id}`);
+  return response.data;
+};
+
+export const fetchAllEmployees = async (): Promise<Employee[]> => {
+  const response = await axiosInstance.get<Employee[]>("/api/employees");
+  return response.data;
+};

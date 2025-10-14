@@ -1,6 +1,5 @@
 package com.it.BookSmart.dtos;
 
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -27,11 +26,15 @@ public class AppointmentDto {
     private Long employeeId;
 
     @NotNull(message = "Appointment time cannot be null")
-    @Future(message = "Appointment time must be in the future")
     private LocalDateTime appointmentTime;
 
     @NotBlank(message = "Service name cannot be blank")
     private String serviceName;
 
     private Integer version;
+
+    private String status;
+
+    private LocalDateTime canceledAt;
+
 }

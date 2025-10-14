@@ -4,6 +4,7 @@ import { Business } from "../models/business.model";
 import axiosInstance from "../api/axiosInstance";
 import { useAuthStore } from "../store/application.store";
 import { fetchBusinessesByOwnerId } from "../services/business.service";
+import ConfirmModal from "../components/shared/ConfirmModal";
 
 const ServicesManagementPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -13,6 +14,10 @@ const ServicesManagementPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingService, setEditingService] = useState<ServiceType | null>(null);
+  
+  // Delete confirmation state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [serviceToDelete, setServiceToDelete] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -79,15 +84,23 @@ const ServicesManagementPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this service?")) return;
+  const handleDeleteClick = (id: number) => {
+    setServiceToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!serviceToDelete) return;
     
     try {
-      await axiosInstance.delete(`/api/service-types/${id}`);
+      await axiosInstance.delete(`/api/service-types/${serviceToDelete}`);
       fetchServices();
+      setShowDeleteModal(false);
+      setServiceToDelete(null);
     } catch (error) {
       console.error("Failed to delete service", error);
       alert("Failed to delete service. Please try again.");
+      setShowDeleteModal(false);
     }
   };
 
@@ -181,7 +194,7 @@ const ServicesManagementPage: React.FC = () => {
                 Edit
               </button>
               <button
-                onClick={() => handleDelete(service.id)}
+                onClick={() => handleDeleteClick(service.id)}
                 className="flex-1 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
               >
                 Delete
@@ -264,9 +277,23 @@ const ServicesManagementPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete Service"
+        message="Are you sure you want to delete this service? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmButtonClass="bg-red-500 hover:bg-red-600"
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setServiceToDelete(null);
+        }}
+      />
     </div>
   );
 };
 
 export default ServicesManagementPage;
-

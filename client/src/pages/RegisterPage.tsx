@@ -11,7 +11,7 @@ const RegisterPage: React.FC = () => {
   const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<'USER' | 'BUSINESS_OWNER'>('USER');
+  const [role, setRole] = useState<'USER' | 'BUSINESS_OWNER' | 'ADMIN'>('USER');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -150,7 +150,7 @@ const RegisterPage: React.FC = () => {
         </div>
         <div className="mb-4">
           <label className="block text-gray-700 mb-2">Register as</label>
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <label className="flex items-center">
               <input
                 type="radio"

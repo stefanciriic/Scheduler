@@ -25,4 +25,6 @@ public class EmployeeDto {
 
     @NotNull(message = "Business ID cannot be null")
     private Long businessId;
+    
+    private Long userId;  // Optional - link to User account
 }

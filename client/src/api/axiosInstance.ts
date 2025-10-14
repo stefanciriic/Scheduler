@@ -19,7 +19,13 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      useAuthStore.getState().logout(); 
+      const { logout } = useAuthStore.getState();
+      logout();
+      
+      // Show user-friendly message
+      alert("Your session has expired. Please log in again.");
+      
+      // Redirect to login
       window.location.href = "/login"; 
     }
     return Promise.reject(error); 

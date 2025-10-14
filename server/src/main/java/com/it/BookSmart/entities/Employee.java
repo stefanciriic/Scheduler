@@ -2,7 +2,6 @@ package com.it.BookSmart.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Getter
@@ -26,6 +25,10 @@ public class Employee {
     @ManyToOne
     @JoinColumn(name = "business_id", nullable = false)
     private Business business;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     public Employee(Long employeeId) {
         this.id = employeeId;

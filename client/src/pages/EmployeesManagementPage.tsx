@@ -1,15 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Business } from "../models/business.model";
+import { Employee } from "../models/employee.model";
 import axiosInstance from "../api/axiosInstance";
 import { useAuthStore } from "../store/application.store";
 import { fetchBusinessesByOwnerId } from "../services/business.service";
-
-interface Employee {
-  id: number;
-  name: string;
-  position: string;
-  businessId: number;
-}
+import ConfirmModal from "../components/shared/ConfirmModal";
 
 const EmployeesManagementPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -19,6 +14,12 @@ const EmployeesManagementPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"name_asc" | "name_desc" | "position_asc" | "position_desc">("name_asc");
+  
+  // Delete confirmation state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -83,15 +84,23 @@ const EmployeesManagementPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this employee?")) return;
+  const handleDeleteClick = (id: number) => {
+    setEmployeeToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!employeeToDelete) return;
     
     try {
-      await axiosInstance.delete(`/api/employees/${id}`);
+      await axiosInstance.delete(`/api/employees/${employeeToDelete}`);
       fetchEmployees();
+      setShowDeleteModal(false);
+      setEmployeeToDelete(null);
     } catch (error) {
       console.error("Failed to delete employee", error);
       alert("Failed to delete employee. Please try again.");
+      setShowDeleteModal(false);
     }
   };
 
@@ -164,29 +173,76 @@ const EmployeesManagementPage: React.FC = () => {
         </select>
       </div>
 
-      {/* Employees List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {employees.map((employee) => (
-          <div key={employee.id} className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-xl font-semibold mb-2">{employee.name}</h3>
-            <p className="text-gray-600 mb-4">{employee.position}</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleEdit(employee)}
-                className="flex-1 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(employee.id)}
-                className="flex-1 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
+      {/* Controls: Search & Sort */}
+      <div className="mb-6 flex flex-col md:flex-row gap-3 md:items-center">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search employees by name or position..."
+          className="w-full md:w-1/3 px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+        />
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as any)}
+          className="px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+        >
+          <option value="name_asc">Name A→Z</option>
+          <option value="name_desc">Name Z→A</option>
+          <option value="position_asc">Position A→Z</option>
+          <option value="position_desc">Position Z→A</option>
+        </select>
       </div>
+
+      {/* Derived list */}
+      {(() => {
+        const q = query.trim().toLowerCase();
+        const filtered = employees.filter(e =>
+          q ? (e.name?.toLowerCase().includes(q) || e.position?.toLowerCase().includes(q)) : true
+        );
+        const sorted = filtered.sort((a, b) => {
+          const by = sortBy;
+          const an = a.name?.toLowerCase() || "";
+          const bn = b.name?.toLowerCase() || "";
+          const ap = a.position?.toLowerCase() || "";
+          const bp = b.position?.toLowerCase() || "";
+          if (by === "name_asc") return an.localeCompare(bn);
+          if (by === "name_desc") return bn.localeCompare(an);
+          if (by === "position_asc") return ap.localeCompare(bp);
+          return bp.localeCompare(ap);
+        });
+
+        return (
+          <>
+            {/* Employees List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sorted.map((employee) => (
+                <div key={employee.id} className="bg-white p-6 rounded-lg shadow-md">
+                  <h3 className="text-xl font-semibold mb-2 truncate">{employee.name}</h3>
+                  <p className="text-gray-600 mb-4 truncate">{employee.position}</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEdit(employee)}
+                      className="flex-1 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(employee.id)}
+                      className="flex-1 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {sorted.length === 0 && (
+              <div className="text-center text-gray-600 py-8">No employees match your filters.</div>
+            )}
+          </>
+        );
+      })()}
 
       {/* Add/Edit Modal */}
       {showModal && (
@@ -251,6 +307,21 @@ const EmployeesManagementPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete Employee"
+        message="Are you sure you want to delete this employee? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmButtonClass="bg-red-500 hover:bg-red-600"
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setEmployeeToDelete(null);
+        }}
+      />
     </div>
   );
 };

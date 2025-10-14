@@ -15,6 +15,11 @@ import java.util.List;
 public class EmployeeController {
     private final EmployeeService employeeService;
 
+    @GetMapping("/{id}")
+    public ResponseEntity<EmployeeDto> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(employeeService.getById(id));
+    }
+
     @GetMapping("/business/{businessId}")
     public ResponseEntity<List<EmployeeDto>> getEmployeesByBusiness(@PathVariable Long businessId) {
         return ResponseEntity.ok(employeeService.getEmployeesByBusinessId(businessId));

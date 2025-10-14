@@ -21,6 +21,8 @@ public interface AppointmentMapper {
     @Mapping(target = "serviceId", source = "serviceType.id")
     @Mapping(target = "employeeId", source = "employee.id")
     @Mapping(target = "serviceName", source = "serviceType.name")
+    @Mapping(target = "status", expression = "java(appointment.getStatus() != null ? appointment.getStatus().name() : null)")
+    @Mapping(target = "canceledAt", source = "canceledAt")
     AppointmentDto toDto(Appointment appointment);
 
     @Named("mapUserIdToUser")

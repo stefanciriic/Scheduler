@@ -1,13 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/application.store";
 
 const Header: React.FC = () => {
   const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
+    // Clear user data from Zustand store (automatically clears localStorage via persist middleware)
     logout();
-    localStorage.removeItem("token");
+    
+    // Clear any other localStorage items if needed
+    localStorage.removeItem("token"); // Legacy cleanup (if exists)
+    
+    // Redirect to login page
+    navigate("/login");
   };
 
   return (
@@ -18,6 +25,20 @@ const Header: React.FC = () => {
       <div className="flex items-center space-x-4">
         {user ? (
           <>
+            <Link
+              to="/my-reservations"
+              className="text-white hover:text-blue-300 transition"
+            >
+              My Reservations
+            </Link>
+            {user.role === 'ADMIN' && (
+              <Link
+                to="/admin"
+                className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition"
+              >
+                Admin Panel
+              </Link>
+            )}
             {(user.role === 'BUSINESS_OWNER' || user.role === 'ADMIN') && (
               <Link
                 to="/dashboard"

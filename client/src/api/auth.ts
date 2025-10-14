@@ -1,4 +1,5 @@
 import axiosInstance from "./axiosInstance";
+import { User, UserRole } from "../models/user.model";
 
 export interface Credentials {
     username: string;
@@ -10,17 +11,7 @@ export interface Credentials {
     lastName: string;
     username: string;
     password: string;
-    role?: 'USER' | 'BUSINESS_OWNER';
-  }
-  
-  export interface User {
-    id: number;
-    firstName: string;
-    lastName: string;
-    username: string;
-    token: string;
-    role: 'ADMIN' | 'BUSINESS_OWNER' | 'EMPLOYEE' | 'USER';
-    businessId?: number; // Optional - samo za BUSINESS_OWNER
+    role?: UserRole;
   }
 
   export const login = async (credentials: Credentials): Promise<User> => {
