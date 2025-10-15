@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { login as loginApi } from "../api/auth";
-import { useAuthStore } from "../store/application.store";
-import handleApiError from "../utils/handleApiError";
+import { login as loginApi } from "../../api/auth";
+import { useAuthStore } from "../../store/application.store";
+import handleApiError from "../../utils/handleApiError";
+import ErrorMessage from "../../components/shared/ErrorMessage";
+import Toast from "../../utils/toast";
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -21,8 +23,12 @@ const LoginPage: React.FC = () => {
       login(user);
       console.log("Logging in user:", user); 
 
-      localStorage.setItem("token", user.token);
-
+      if (user.token){
+        localStorage.setItem("token", user.token);
+      }
+      
+      Toast.success(`Welcome back, ${user.username}!`);
+      
       if (user.role === 'BUSINESS_OWNER' || user.role === 'ADMIN') {
         navigate("/dashboard");
       } else {
@@ -37,7 +43,7 @@ const LoginPage: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <form onSubmit={handleSubmit} className="p-6 bg-white shadow-md rounded w-96">
         <h1 className="text-2xl font-bold mb-4 text-center">Login</h1>
-        {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
+        <ErrorMessage message={error} className="text-center" />
         <div className="mb-4">
           <label htmlFor="username" className="block text-gray-700 mb-2">Username</label>
           <input

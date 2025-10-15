@@ -3,8 +3,11 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { ServiceType } from "../models/service.type";
 import { Value } from "react-calendar/src/shared/types.js";
-import axiosInstance from "../api/axiosInstance";
 import { useAuthStore } from "../store/application.store";
+import Toast from "../utils/toast";
+import { createReservation } from "../services/reservation.service";
+import { formatToLocalDateTime } from "../utils/dateTimeUtils";
+import SuccessModal from "./shared/SuccessModal";
 
 interface ReservationModalProps {
   service: ServiceType;
@@ -31,38 +34,35 @@ const ReservationModal: React.FC<ReservationModalProps> = ({ service, onClose })
 
   const handleReserve = async () => {
     if (!selectedDate || !selectedTime || !userId) {
-      alert("Please ensure all fields are selected before reserving.");
+      Toast.error("Please ensure all fields are selected before reserving.");
       return;
     }
+
+    if (!service.employeeId) {
+      Toast.error("No employee is assigned to this service. Please contact the business.");
+      return;
+    }
+
     const appointmentTime = new Date(selectedDate);
     const [hours, minutes] = selectedTime.split(':');
     appointmentTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
 
-    // Format as LocalDateTime (yyyy-MM-ddTHH:mm:ss) without timezone
-    const formatLocalDateTime = (date: Date): string => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hour = String(date.getHours()).padStart(2, '0');
-      const minute = String(date.getMinutes()).padStart(2, '0');
-      const second = String(date.getSeconds()).padStart(2, '0');
-      return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
-    };
-
     try {
-      // API call to create reservation
-      await axiosInstance.post("/api/appointments", {
+      // Prepare reservation data
+      const reservationData = {
         serviceId: service.id,
         serviceName: service.name,
         userId: userId,
-        employeeId: 1, // Replace if dynamic employee selection is required
-        appointmentTime: formatLocalDateTime(appointmentTime),
-      });
+        employeeId: service.employeeId,
+        appointmentTime: formatToLocalDateTime(appointmentTime),
+      };
+
+      await createReservation(reservationData);
 
       setShowSuccessModal(true);
     } catch (error) {
       console.error("Error making reservation:", error);
-      alert("Failed to make reservation. Please try again.");
+      Toast.error("Failed to make reservation. Please try again.");
     }
   };
 
@@ -161,29 +161,17 @@ const ReservationModal: React.FC<ReservationModalProps> = ({ service, onClose })
       </div>
 
       {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex justify-center items-center z-10">
-          <div className="bg-white rounded-lg p-8 w-[400px] shadow-2xl text-center">
-            <div className="mb-4">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">Reservation Successful!</h3>
-            <p className="text-gray-600 mb-6">
-              Your appointment for <strong>{service.name}</strong> has been confirmed.
-            </p>
-            <button
-              onClick={handleSuccessClose}
-              className="bg-green-500 text-white px-8 py-3 rounded-lg hover:bg-green-600 transition font-semibold"
-            >
-              Great!
-            </button>
-          </div>
-        </div>
-      )}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title="Reservation Successful!"
+        message={
+          <>
+            Your appointment for <strong>{service.name}</strong> has been confirmed.
+          </>
+        }
+        buttonText="Great!"
+        onClose={handleSuccessClose}
+      />
     </div>
   );
 };

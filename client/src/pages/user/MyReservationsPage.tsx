@@ -1,7 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { useAuthStore } from "../store/application.store";
-import { getUserReservations, cancelReservation, ReservationResponse } from "../services/reservation.service";
-import handleApiError from "../utils/handleApiError";
+import { useAuthStore } from "../../store/application.store";
+import { getUserReservations, cancelReservation, ReservationResponse } from "../../services/reservation.service";
+import handleApiError from "../../utils/handleApiError";
+import ErrorMessage from "../../components/shared/ErrorMessage";
+import { formatDateTime as formatDateTimeUtil, parseAppointmentTime } from "../../utils/dateTimeUtils";
+import SuccessModal from "../../components/shared/SuccessModal";
+import ConfirmModal from "../../components/shared/ConfirmModal";
 
 const MyReservationsPage: React.FC = () => {
   const [reservations, setReservations] = useState<ReservationResponse[]>([]);
@@ -21,7 +25,6 @@ const MyReservationsPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await getUserReservations(user.id);
-      // Frontend safety: hide canceled even if backend misconfigured
       setReservations(data.filter(r => r.status !== 'CANCELED'));
     } catch (err: unknown) {
       setError(handleApiError(err));
@@ -53,24 +56,8 @@ const MyReservationsPage: React.FC = () => {
     }
   };
 
-  const parseAppointmentTime = (appointmentTime: string | number[]): Date => {
-    if (Array.isArray(appointmentTime)) {
-      const [year, month, day, hour = 0, minute = 0, second = 0] = appointmentTime;
-      return new Date(year, month - 1, day, hour, minute, second);
-    }
-    return new Date(appointmentTime);
-  };
-
-  const formatDateTime = (dateTime: string | number[]) => {
-    const date = parseAppointmentTime(dateTime);
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    };
-    return date.toLocaleDateString('en-US', options);
+  const formatDateTime = (dateTime: string | number[]): string => {
+    return formatDateTimeUtil(dateTime).combined;
   };
 
   const isUpcoming = (dateTime: string | number[]) => {
@@ -81,13 +68,10 @@ const MyReservationsPage: React.FC = () => {
 
   if (error) return (
     <div className="container mx-auto py-8">
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-        Error: {error}
-      </div>
+      <ErrorMessage message={error} />
     </div>
   );
 
-  // derive filtered + sorted list
   const normalizedQuery = query.trim().toLowerCase();
   const filtered = reservations.filter((r) => {
     const matchesQuery = normalizedQuery
@@ -118,7 +102,7 @@ const MyReservationsPage: React.FC = () => {
         />
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as any)}
+          onChange={(e) => setStatusFilter(e.target.value as "all" | "upcoming" | "past")}
           className="px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
         >
           <option value="all">All</option>
@@ -127,7 +111,7 @@ const MyReservationsPage: React.FC = () => {
         </select>
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as any)}
+          onChange={(e) => setSortBy(e.target.value as "date_desc" | "date_asc")}
           className="px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
         >
           <option value="date_desc">Newest first</option>
@@ -182,62 +166,25 @@ const MyReservationsPage: React.FC = () => {
       )}
 
       {/* Cancel Confirmation Modal */}
-      {showCancelModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-8 w-[400px] shadow-2xl">
-            <div className="mb-4">
-              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-            </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2 text-center">Cancel Reservation?</h3>
-            <p className="text-gray-600 mb-6 text-center">
-              Are you sure you want to cancel this reservation? This action cannot be undone.
-            </p>
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowCancelModal(false)}
-                className="flex-1 bg-gray-300 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-400 transition font-semibold"
-              >
-                No, Keep It
-              </button>
-              <button
-                onClick={handleConfirmCancel}
-                className="flex-1 bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition font-semibold"
-              >
-                Yes, Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        isOpen={showCancelModal}
+        title="Cancel Reservation?"
+        message="Are you sure you want to cancel this reservation? This action cannot be undone."
+        confirmText="Yes, Cancel"
+        cancelText="No, Keep It"
+        confirmButtonClass="bg-red-500 hover:bg-red-600"
+        onConfirm={handleConfirmCancel}
+        onCancel={() => setShowCancelModal(false)}
+      />
 
       {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-8 w-[400px] shadow-2xl text-center">
-            <div className="mb-4">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">Reservation Cancelled</h3>
-            <p className="text-gray-600 mb-6">
-              Your reservation has been successfully cancelled.
-            </p>
-            <button
-              onClick={() => setShowSuccessModal(false)}
-              className="bg-green-500 text-white px-8 py-3 rounded-lg hover:bg-green-600 transition font-semibold"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
+      <SuccessModal
+        isOpen={showSuccessModal}
+        title="Reservation Cancelled"
+        message="Your reservation has been successfully cancelled."
+        buttonText="OK"
+        onClose={() => setShowSuccessModal(false)}
+      />
     </div>
   );
 };

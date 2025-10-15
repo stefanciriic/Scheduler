@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { Business } from "../models/business.model";
-import { Employee } from "../models/employee.model";
-import axiosInstance from "../api/axiosInstance";
-import { useAuthStore } from "../store/application.store";
-import { fetchBusinessesByOwnerId } from "../services/business.service";
-import ConfirmModal from "../components/shared/ConfirmModal";
+import React, { useEffect, useState, useCallback } from "react";
+import { Business } from "../../../models/business.model";
+import { Employee } from "../../../models/employee.model";
+import { useAuthStore } from "../../../store/application.store";
+import { fetchBusinessesByOwnerId } from "../../../services/business.service";
+import { fetchEmployeesByBusinessId, createEmployee, updateEmployee, deleteEmployee } from "../../../services/employee.service";
+import handleApiError from "../../../utils/handleApiError";
+import ConfirmModal from "../../../components/shared/ConfirmModal";
 
 const EmployeesManagementPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -15,10 +16,13 @@ const EmployeesManagementPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [query, setQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"name_asc" | "name_desc" | "position_asc" | "position_desc">("name_asc");
+  type SortType = "name_asc" | "name_desc" | "position_asc" | "position_desc";
+  const [sortBy, setSortBy] = useState<SortType>("name_asc");
   
-  // Delete confirmation state
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
   const [employeeToDelete, setEmployeeToDelete] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
@@ -27,17 +31,7 @@ const EmployeesManagementPage: React.FC = () => {
     businessId: 0,
   });
 
-  useEffect(() => {
-    fetchBusinesses();
-  }, []);
-
-  useEffect(() => {
-    if (selectedBusinessId) {
-      fetchEmployees();
-    }
-  }, [selectedBusinessId]);
-
-  const fetchBusinesses = async () => {
+  const fetchBusinesses = useCallback(async () => {
     if (!user?.id) return;
     
     try {
@@ -53,34 +47,43 @@ const EmployeesManagementPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     if (!selectedBusinessId) return;
     
     try {
-      const response = await axiosInstance.get<Employee[]>(`/api/employees/business/${selectedBusinessId}`);
-      setEmployees(response.data);
+      const data = await fetchEmployeesByBusinessId(selectedBusinessId);
+      setEmployees(data);
     } catch (error) {
-      console.error("Failed to fetch employees", error);
+      console.error("Failed to fetch employees:", handleApiError(error));
     }
-  };
+  }, [selectedBusinessId]);
+
+  useEffect(() => {
+    fetchBusinesses();
+  }, [fetchBusinesses]);
+
+  useEffect(() => {
+    if (selectedBusinessId) {
+      fetchEmployees();
+    }
+  }, [selectedBusinessId, fetchEmployees]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (editingEmployee) {
-        // Update existing employee
-        await axiosInstance.put(`/api/employees/${editingEmployee.id}`, formData);
+        await updateEmployee(editingEmployee.id, formData as Employee);
       } else {
-        // Create new employee
-        await axiosInstance.post("/api/employees", formData);
+        await createEmployee(formData as Employee);
       }
-      fetchEmployees();
+      await fetchEmployees();
       handleCloseModal();
     } catch (error) {
-      console.error("Failed to save employee", error);
-      alert("Failed to save employee. Please try again.");
+      console.error("Failed to save employee:", handleApiError(error));
+      setWarningMessage(handleApiError(error));
+      setShowWarningModal(true);
     }
   };
 
@@ -93,13 +96,14 @@ const EmployeesManagementPage: React.FC = () => {
     if (!employeeToDelete) return;
     
     try {
-      await axiosInstance.delete(`/api/employees/${employeeToDelete}`);
-      fetchEmployees();
+      await deleteEmployee(employeeToDelete);
+      await fetchEmployees();
       setShowDeleteModal(false);
       setEmployeeToDelete(null);
     } catch (error) {
-      console.error("Failed to delete employee", error);
-      alert("Failed to delete employee. Please try again.");
+      console.error("Failed to delete employee:", handleApiError(error));
+      setWarningMessage(handleApiError(error));
+      setShowWarningModal(true);
       setShowDeleteModal(false);
     }
   };
@@ -120,7 +124,7 @@ const EmployeesManagementPage: React.FC = () => {
     setFormData({
       name: "",
       position: "",
-      businessId: selectedBusinessId || 0,
+      businessId: selectedBusinessId!,
     });
   };
 
@@ -128,7 +132,7 @@ const EmployeesManagementPage: React.FC = () => {
     setFormData({
       name: "",
       position: "",
-      businessId: selectedBusinessId || 0,
+      businessId: selectedBusinessId!,
     });
     setShowModal(true);
   };
@@ -184,7 +188,7 @@ const EmployeesManagementPage: React.FC = () => {
         />
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as any)}
+          onChange={(e) => setSortBy(e.target.value as SortType)}
           className="px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
         >
           <option value="name_asc">Name A→Z</option>
@@ -253,22 +257,6 @@ const EmployeesManagementPage: React.FC = () => {
             </h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Business</label>
-                <select
-                  value={formData.businessId}
-                  onChange={(e) => setFormData({ ...formData, businessId: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-green-300"
-                  required
-                >
-                  <option value={0} disabled>Select a business</option>
-                  {businesses.map((business) => (
-                    <option key={business.id} value={business.id}>
-                      {business.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-4">
                 <label className="block text-gray-700 mb-2">Employee Name</label>
                 <input
                   type="text"
@@ -321,6 +309,17 @@ const EmployeesManagementPage: React.FC = () => {
           setShowDeleteModal(false);
           setEmployeeToDelete(null);
         }}
+      />
+
+      {/* Warning Modal */}
+      <ConfirmModal
+        isOpen={showWarningModal}
+        title="Warning"
+        message={warningMessage}
+        confirmText="OK"
+        cancelText=""
+        onConfirm={() => setShowWarningModal(false)}
+        onCancel={() => setShowWarningModal(false)}
       />
     </div>
   );

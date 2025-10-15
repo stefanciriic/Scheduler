@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useAuthStore } from "../store/application.store";
-import WorkingHoursSelector from "../components/WorkingHoursSelector";
-import { createBusiness, updateBusiness, fetchBusinessesByOwnerId, deleteBusiness } from "../services/business.service";
-import { Business } from "../models/business.model";
+import { useAuthStore } from "../../store/application.store";
+import WorkingHoursSelector from "../../components/WorkingHoursSelector";
+import { createBusiness, updateBusiness, fetchBusinessesByOwnerId, deleteBusiness } from "../../services/business.service";
+import { Business } from "../../models/business.model";
+import Toast from "../../utils/toast";
+import ConfirmModal from "../../components/shared/ConfirmModal";
 
 const MyBusinessPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -10,6 +12,8 @@ const MyBusinessPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingBusiness, setEditingBusiness] = useState<Business | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [businessToDelete, setBusinessToDelete] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -56,7 +60,7 @@ const MyBusinessPage: React.FC = () => {
       handleCloseModal();
     } catch (error) {
       console.error("Failed to save business", error);
-      alert("Failed to save business. Please try again.");
+      Toast.error("Failed to save business. Please try again.");
     }
   };
 
@@ -76,15 +80,23 @@ const MyBusinessPage: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this business?")) return;
+  const handleDeleteClick = (id: number) => {
+    setBusinessToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (businessToDelete === null) return;
     
     try {
-      await deleteBusiness(id);
+      await deleteBusiness(businessToDelete);
       fetchBusinesses();
+      setShowDeleteModal(false);
+      setBusinessToDelete(null);
     } catch (error) {
       console.error("Failed to delete business", error);
-      alert("Failed to delete business. Please try again.");
+      Toast.error("Failed to delete business. Please try again.");
+      setShowDeleteModal(false);
     }
   };
 
@@ -190,7 +202,7 @@ const MyBusinessPage: React.FC = () => {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(business.id)}
+                  onClick={() => handleDeleteClick(business.id)}
                   className="flex-1 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
                 >
                   Delete
@@ -319,6 +331,21 @@ const MyBusinessPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete Business?"
+        message="Are you sure you want to delete this business? This action cannot be undone and will remove all associated data."
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+        confirmButtonClass="bg-red-500 hover:bg-red-600"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setBusinessToDelete(null);
+        }}
+      />
     </div>
   );
 };

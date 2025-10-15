@@ -2,18 +2,26 @@ import { Navigate, RouteObject } from 'react-router-dom';
 import ProtectedRoute from '../features/auth/ProtectedRoute';
 import OwnerRoute from '../features/auth/OwnerRoute';
 import AdminRoute from '../features/auth/AdminRoute';
-import HomePage from '../pages/HomePage';
-import LoginPage from '../pages/LoginPage';
-import RegisterPage from '../pages/RegisterPage';
+
+import LoginPage from '../pages/auth/LoginPage';
+import RegisterPage from '../pages/auth/RegisterPage';
+
+import HomePage from '../pages/public/HomePage';
+import BusinessDetailsPage from '../pages/public/BusinessDetailsPage';
+
+import MyReservationsPage from '../pages/user/MyReservationsPage';
+
+import DashboardPage from '../pages/owner/DashboardPage';
+import MyBusinessPage from '../pages/owner/MyBusinessPage';
+
+import ServicesManagementPage from '../pages/owner/management/ServicesManagementPage';
+import EmployeesManagementPage from '../pages/owner/management/EmployeesManagementPage';
+import ReservationsPage from '../pages/owner/management/ReservationsPage';
+
+import AdminDashboard from '../pages/admin/AdminDashboard';
+
+// Error page
 import ErrorPage from '../pages/ErrorPage';
-import BusinessDetailsPage from '../pages/BusinessDetailsPage';
-import DashboardPage from '../pages/DashboardPage';
-import MyBusinessPage from '../pages/MyBusinessPage';
-import ServicesManagementPage from '../pages/ServicesManagementPage';
-import EmployeesManagementPage from '../pages/EmployeesManagementPage';
-import ReservationsPage from '../pages/ReservationsPage';
-import MyReservationsPage from '../pages/MyReservationsPage';
-import AdminDashboard from '../pages/AdminDashboard';
 
 const Routes: RouteObject[] = [
   {

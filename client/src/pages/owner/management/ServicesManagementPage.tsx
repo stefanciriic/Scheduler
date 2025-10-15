@@ -1,22 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { ServiceType } from "../models/service.type";
-import { Business } from "../models/business.model";
-import axiosInstance from "../api/axiosInstance";
-import { useAuthStore } from "../store/application.store";
-import { fetchBusinessesByOwnerId } from "../services/business.service";
-import ConfirmModal from "../components/shared/ConfirmModal";
+import { ServiceType } from "../../../models/service.type";
+import { Business } from "../../../models/business.model";
+import { Employee } from "../../../models/employee.model";
+import { useAuthStore } from "../../../store/application.store";
+import { fetchBusinessesByOwnerId } from "../../../services/business.service";
+import { fetchServicesByBusinessId, createService, updateService, deleteService } from "../../../services/service.type.service";
+import { fetchEmployeesByBusinessId } from "../../../services/employee.service";
+import ConfirmModal from "../../../components/shared/ConfirmModal";
+import handleApiError from "../../../utils/handleApiError";
+import Toast from "../../../utils/toast";
 
 const ServicesManagementPage: React.FC = () => {
   const { user } = useAuthStore();
   const [services, setServices] = useState<ServiceType[]>([]);
   const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedBusinessId, setSelectedBusinessId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingService, setEditingService] = useState<ServiceType | null>(null);
   
-  // Delete confirmation state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
   const [serviceToDelete, setServiceToDelete] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
@@ -34,6 +40,7 @@ const ServicesManagementPage: React.FC = () => {
   useEffect(() => {
     if (selectedBusinessId) {
       fetchServices();
+      fetchEmployees();
     }
   }, [selectedBusinessId]);
 
@@ -59,28 +66,39 @@ const ServicesManagementPage: React.FC = () => {
     if (!selectedBusinessId) return;
     
     try {
-      const response = await axiosInstance.get<ServiceType[]>(`/api/service-types/business/${selectedBusinessId}`);
-      setServices(response.data);
+      const data = await fetchServicesByBusinessId(selectedBusinessId);
+      setServices(data);
     } catch (error) {
-      console.error("Failed to fetch services", error);
+      console.error("Failed to fetch services:", handleApiError(error));
+    }
+  };
+
+  const fetchEmployees = async () => {
+    if (!selectedBusinessId) return;
+    
+    try {
+      const data = await fetchEmployeesByBusinessId(selectedBusinessId);
+      setEmployees(data);
+    } catch (error) {
+      console.error("Failed to fetch employees:", handleApiError(error));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+        
     try {
       if (editingService) {
-        // Update existing service
-        await axiosInstance.put(`/api/service-types/${editingService.id}`, formData);
+        await updateService(editingService.id, formData as ServiceType);
       } else {
-        // Create new service
-        await axiosInstance.post("/api/service-types", formData);
+        await createService(formData as ServiceType);
       }
-      fetchServices();
+      await fetchServices();
       handleCloseModal();
     } catch (error) {
-      console.error("Failed to save service", error);
-      alert("Failed to save service. Please try again.");
+      console.error("Failed to save service:", handleApiError(error));
+      setWarningMessage(handleApiError(error));
+      setShowWarningModal(true);
     }
   };
 
@@ -93,13 +111,13 @@ const ServicesManagementPage: React.FC = () => {
     if (!serviceToDelete) return;
     
     try {
-      await axiosInstance.delete(`/api/service-types/${serviceToDelete}`);
-      fetchServices();
+      await deleteService(serviceToDelete);
+      await fetchServices();
       setShowDeleteModal(false);
       setServiceToDelete(null);
     } catch (error) {
-      console.error("Failed to delete service", error);
-      alert("Failed to delete service. Please try again.");
+      console.error("Failed to delete service:", handleApiError(error));
+      Toast.error("Failed to delete service. Please try again.");
       setShowDeleteModal(false);
     }
   };
@@ -110,7 +128,7 @@ const ServicesManagementPage: React.FC = () => {
       name: service.name,
       description: service.description || "",
       price: service.price,
-      businessId: service.businessId,
+      businessId: service.businessId || selectedBusinessId || 0,
       employeeId: service.employeeId || null,
     });
     setShowModal(true);
@@ -129,11 +147,21 @@ const ServicesManagementPage: React.FC = () => {
   };
 
   const handleOpenModal = () => {
+    if (!selectedBusinessId) {
+      setWarningMessage("Please select a business first.");
+      setShowWarningModal(true);
+      return;
+    }
+    if (employees.length === 0) {
+      setWarningMessage("Please create at least one employee before adding services.");
+      setShowWarningModal(true);
+      return;
+    }
     setFormData({
       name: "",
       description: "",
       price: 0,
-      businessId: selectedBusinessId || 0,
+      businessId: selectedBusinessId,
       employeeId: null,
     });
     setShowModal(true);
@@ -181,27 +209,35 @@ const ServicesManagementPage: React.FC = () => {
 
       {/* Services List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {services.map((service) => (
-          <div key={service.id} className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-xl font-semibold mb-2">{service.name}</h3>
-            <p className="text-gray-600 mb-4">{service.description}</p>
-            <p className="text-lg font-bold text-blue-600 mb-4">${service.price}</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleEdit(service)}
-                className="flex-1 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDeleteClick(service.id)}
-                className="flex-1 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-              >
-                Delete
-              </button>
+        {services.map((service) => {
+          const assignedEmployee = employees.find(emp => emp.id === service.employeeId);
+          return (
+            <div key={service.id} className="bg-white p-6 rounded-lg shadow-md">
+              <h3 className="text-xl font-semibold mb-2">{service.name}</h3>
+              <p className="text-gray-600 mb-2">{service.description}</p>
+              <p className="text-lg font-bold text-blue-600 mb-2">€{service.price}</p>
+              {assignedEmployee && (
+                <p className="text-sm text-gray-500 mb-4">
+                  👤 {assignedEmployee.name} ({assignedEmployee.position})
+                </p>
+              )}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEdit(service)}
+                  className="flex-1 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDeleteClick(service.id)}
+                  className="flex-1 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Add/Edit Modal */}
@@ -212,22 +248,6 @@ const ServicesManagementPage: React.FC = () => {
               {editingService ? "Edit Service" : "Add New Service"}
             </h2>
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Business</label>
-                <select
-                  value={formData.businessId}
-                  onChange={(e) => setFormData({ ...formData, businessId: Number(e.target.value) })}
-                  className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
-                  required
-                >
-                  <option value={0} disabled>Select a business</option>
-                  {businesses.map((business) => (
-                    <option key={business.id} value={business.id}>
-                      {business.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
               <div className="mb-4">
                 <label className="block text-gray-700 mb-2">Service Name</label>
                 <input
@@ -248,7 +268,7 @@ const ServicesManagementPage: React.FC = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Price ($)</label>
+                <label className="block text-gray-700 mb-2">Price (€)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -257,6 +277,22 @@ const ServicesManagementPage: React.FC = () => {
                   className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
                   required
                 />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-2">Assigned Employee</label>
+                <select
+                  value={formData.employeeId || ""}
+                  onChange={(e) => setFormData({ ...formData, employeeId: e.target.value ? Number(e.target.value) : null })}
+                  className="w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300"
+                  required
+                >
+                  <option value="">Select an employee</option>
+                  {employees.map((employee) => (
+                    <option key={employee.id} value={employee.id}>
+                      {employee.name} - {employee.position}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex gap-4">
                 <button
@@ -291,6 +327,17 @@ const ServicesManagementPage: React.FC = () => {
           setShowDeleteModal(false);
           setServiceToDelete(null);
         }}
+      />
+
+      {/* Warning Modal */}
+      <ConfirmModal
+        isOpen={showWarningModal}
+        title="Warning"
+        message={warningMessage}
+        confirmText="OK"
+        cancelText=""
+        onConfirm={() => setShowWarningModal(false)}
+        onCancel={() => setShowWarningModal(false)}
       />
     </div>
   );

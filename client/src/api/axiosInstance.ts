@@ -1,5 +1,7 @@
 import axios from "axios";
 import { useAuthStore } from "../store/application.store";
+import Toast from "../utils/toast";
+import { navigate } from "../utils/navigationService";
 
 const axiosInstance = axios.create({
   baseURL: "http://localhost:8080",
@@ -22,11 +24,9 @@ axiosInstance.interceptors.response.use(
       const { logout } = useAuthStore.getState();
       logout();
       
-      // Show user-friendly message
-      alert("Your session has expired. Please log in again.");
+      Toast.error("Your session has expired. Please log in again.");
       
-      // Redirect to login
-      window.location.href = "/login"; 
+      navigate("/login");
     }
     return Promise.reject(error); 
   }

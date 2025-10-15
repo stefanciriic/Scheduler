@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchServicesByBusinessId } from "../services/service.type.service";
-import { ServiceType } from "../models/service.type";
-import { fetchBusinessById } from "../services/business.service";
-import { Business } from "../models/business.model";
-import ServiceCard from "../components/shared/ServiceCard";
+import { fetchServicesByBusinessId } from "../../services/service.type.service";
+import { ServiceType } from "../../models/service.type";
+import { fetchBusinessById } from "../../services/business.service";
+import { Business } from "../../models/business.model";
+import ServiceCard from "../../components/shared/ServiceCard";
 
 const BusinessDetailsPage = () => {
   const { id } = useParams<{ id: string }>();

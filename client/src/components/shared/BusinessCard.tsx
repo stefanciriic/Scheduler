@@ -10,11 +10,13 @@ const BusinessCard: React.FC<BusinessCardProps> = ({ business }) => {
 
   return (
     <div className="border rounded-lg shadow-md p-4 w-full max-w-sm mx-auto hover:shadow-lg transition-shadow duration-300">
-      <img
-        src={business.imageUrl || defaultImageUrl} 
-        alt={business.name || "Business"}
-        className="w-full h-40 object-cover rounded-md mb-3"
-      />
+      <div className="w-full h-48 overflow-hidden rounded-md mb-3 bg-gray-200">
+        <img
+          src={business.imageUrl || defaultImageUrl} 
+          alt={business.name || "Business"}
+          className="w-full h-full object-cover"
+        />
+      </div>
       <h2 className="text-lg font-bold mb-2 truncate text-gray-800">{business.name}</h2>
       <p className="text-sm text-gray-600 mb-2 truncate">
         📍 {business.city}

@@ -2,13 +2,19 @@ package com.it.BookSmart.services;
 
 import com.it.BookSmart.dtos.BusinessDto;
 import com.it.BookSmart.dtos.ImageDto;
+import com.it.BookSmart.entities.Appointment;
 import com.it.BookSmart.entities.Business;
+import com.it.BookSmart.entities.Employee;
 import com.it.BookSmart.entities.Image;
+import com.it.BookSmart.entities.ServiceType;
 import com.it.BookSmart.entities.User;
 import com.it.BookSmart.exceptions.ResourceNotFoundException;
 import com.it.BookSmart.mappers.BusinessMapper;
 import com.it.BookSmart.mappers.ImageMapper;
+import com.it.BookSmart.repositories.AppointmentRepository;
 import com.it.BookSmart.repositories.BusinessRepository;
+import com.it.BookSmart.repositories.EmployeeRepository;
+import com.it.BookSmart.repositories.ServiceTypeRepository;
 import com.it.BookSmart.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +33,9 @@ public class BusinessService {
 
     private final BusinessRepository businessRepository;
     private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
+    private final ServiceTypeRepository serviceTypeRepository;
+    private final AppointmentRepository appointmentRepository;
     private final BusinessMapper businessMapper;
     private final ImageMapper imageMapper;
     private final CloudinaryService cloudinaryService;
@@ -101,9 +110,46 @@ public class BusinessService {
 
     @Transactional
     public void deleteBusiness(Long id) {
-        if (!businessRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Business not found with id: " + id);
+        // Check if business exists
+        Business business = businessRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + id));
+        
+        // Step 1: Get all employees of this business
+        List<Employee> employees = employeeRepository.findAllByBusinessId(id);
+        
+        // Step 2: Delete all appointments for employees of this business
+        // This must be done first because appointments reference employees
+        for (Employee employee : employees) {
+            List<Appointment> employeeAppointments = appointmentRepository.findByEmployee_Id(employee.getId());
+            if (!employeeAppointments.isEmpty()) {
+                appointmentRepository.deleteAll(employeeAppointments);
+            }
         }
+        
+        // Step 3: Get all services of this business and delete their appointments
+        List<ServiceType> services = serviceTypeRepository.findByBusinessId(id);
+        for (ServiceType service : services) {
+            List<Appointment> serviceAppointments = appointmentRepository.findByServiceType_Id(service.getId());
+            if (!serviceAppointments.isEmpty()) {
+                appointmentRepository.deleteAll(serviceAppointments);
+            }
+        }
+        
+        // Step 4: Delete business image from Cloudinary if exists
+        if (business.getImage() != null && business.getImage().getPublicId() != null) {
+            try {
+                cloudinaryService.deleteImage(business.getImage().getPublicId());
+            } catch (Exception e) {
+                // Log error but don't stop deletion
+                System.err.println("Failed to delete business image from Cloudinary: " + e.getMessage());
+            }
+        }
+        
+        // Step 5: Delete the business
+        // This will cascade delete:
+        // - Employees (via cascade = CascadeType.ALL)
+        // - ServiceTypes (via cascade = CascadeType.ALL)
+        // - Image (via cascade = CascadeType.ALL)
         businessRepository.deleteById(id);
     }
 

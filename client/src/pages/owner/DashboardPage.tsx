@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuthStore } from "../store/application.store";
+import { useAuthStore } from "../../store/application.store";
 
 const DashboardPage: React.FC = () => {
   const user = useAuthStore((state) => state.user);

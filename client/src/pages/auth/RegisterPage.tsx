@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { register, checkUsername } from "../api/auth";
-import { useAuthStore } from "../store/application.store";
-import handleApiError from "../utils/handleApiError";
+import { register, checkUsername } from "../../api/auth";
+import { useAuthStore } from "../../store/application.store";
+import handleApiError from "../../utils/handleApiError";
+import ErrorMessage from "../../components/shared/ErrorMessage";
+import Toast from "../../utils/toast";
 
 const RegisterPage: React.FC = () => {
   const [firstName, setFirstName] = useState("");
@@ -13,7 +15,6 @@ const RegisterPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState<'USER' | 'BUSINESS_OWNER' | 'ADMIN'>('USER');
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const navigate = useNavigate();
   const { login } = useAuthStore();
 
@@ -38,7 +39,6 @@ const RegisterPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(null);
 
     if (!isUsernameAvailable) {
       setError("Username is not available");
@@ -53,16 +53,18 @@ const RegisterPage: React.FC = () => {
     try {
       const user = await register({ firstName, lastName, username, password, role });
       login(user);
-      localStorage.setItem("token", user.token);
 
-      setSuccess(`Welcome, ${user.firstName}! Redirecting...`);
+      localStorage.setItem("token", user.token || "");
+
+      Toast.success(`Welcome, ${user.firstName}! Registration successful!`);
+      
       setTimeout(() => {
         if (user.role === 'BUSINESS_OWNER') {
           navigate("/dashboard");
         } else {
           navigate("/");
         }
-      }, 2000);
+      }, 1500);
     } catch (err: unknown) {
       setError(handleApiError(err));
     }
@@ -72,8 +74,7 @@ const RegisterPage: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <form onSubmit={handleSubmit} className="p-6 bg-white shadow-md rounded w-96">
         <h1 className="text-2xl font-bold mb-4">Register</h1>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        {success && <p className="text-green-500 mb-4">{success}</p>}
+        <ErrorMessage message={error} />
         <div className="mb-4">
           <label htmlFor="firstName" className="block text-gray-700 mb-2">First Name</label>
           <input

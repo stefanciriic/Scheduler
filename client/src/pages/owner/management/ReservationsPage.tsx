@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Business } from "../models/business.model";
-import { fetchUserById } from "../services/userService";
-import { fetchEmployeeById } from "../services/employee.service";
-import { useAuthStore } from "../store/application.store";
-import { fetchBusinessesByOwnerId } from "../services/business.service";
-import { ReservationResponse, getBusinessReservations, cancelReservation, permanentlyDeleteReservation } from "../services/reservation.service";
-import ConfirmModal from "../components/shared/ConfirmModal";
+import { Business } from "../../../models/business.model";
+import { fetchUserById } from "../../../services/userService";
+import { fetchEmployeeById } from "../../../services/employee.service";
+import { useAuthStore } from "../../../store/application.store";
+import { fetchBusinessesByOwnerId } from "../../../services/business.service";
+import { ReservationResponse, getBusinessReservations, cancelReservation, permanentlyDeleteReservation } from "../../../services/reservation.service";
+import ConfirmModal from "../../../components/shared/ConfirmModal";
+import { formatDateTime as formatDateTimeUtil, parseAppointmentTime } from "../../../utils/dateTimeUtils";
+import ErrorMessage from "../../../components/shared/ErrorMessage";
 
 interface EnrichedReservation extends ReservationResponse {
   userName?: string;
@@ -47,23 +49,11 @@ const ReservationsPage: React.FC = () => {
     }
   }, [user?.id]);
 
-  // Helper function to parse appointmentTime (can be string or array)
-  const parseAppointmentTime = useCallback((appointmentTime: string | number[]): Date => {
-    if (Array.isArray(appointmentTime)) {
-      // Format: [year, month, day, hour, minute, second?, nano?]
-      const [year, month, day, hour = 0, minute = 0, second = 0] = appointmentTime;
-      // Note: JavaScript months are 0-indexed, but Java months are 1-indexed
-      return new Date(year, month - 1, day, hour, minute, second);
-    }
-    return new Date(appointmentTime);
-  }, []);
-
   const fetchReservations = useCallback(async () => {
     if (!selectedBusinessId) return;
     
     try {
       const response = await getBusinessReservations(selectedBusinessId);
-      // Enrich user and employee names in parallel with simple in-memory cache
       const userCache = new Map<number, string>();
       const employeeCache = new Map<number, string>();
       const uniqueUserIds = Array.from(new Set(response.map(r => r.userId)));
@@ -89,14 +79,12 @@ const ReservationsPage: React.FC = () => {
         }))
       ]);
       
-      // Enriched list
       const enriched: EnrichedReservation[] = response.map((r) => ({
         ...r,
         userName: userCache.get(r.userId) || undefined,
         employeeName: employeeCache.get(r.employeeId) || undefined,
       }));
 
-      // Filter based on selected filter
       const now = new Date();
       let filtered = enriched;
       
@@ -106,7 +94,6 @@ const ReservationsPage: React.FC = () => {
         filtered = enriched.filter(r => parseAppointmentTime(r.appointmentTime) < now);
       }
       
-      // Sort by date
       filtered.sort((a, b) => 
         parseAppointmentTime(a.appointmentTime).getTime() - parseAppointmentTime(b.appointmentTime).getTime()
       );
@@ -117,7 +104,7 @@ const ReservationsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedBusinessId, filter, parseAppointmentTime]);
+  }, [selectedBusinessId, filter]);
 
   useEffect(() => {
     fetchBusinesses();
@@ -170,27 +157,10 @@ const ReservationsPage: React.FC = () => {
   };
 
   const formatDateTime = (dateTime: string | number[]) => {
-    // Parse LocalDateTime format from backend
-    const date = parseAppointmentTime(dateTime);
-    
-    // Check if date is valid
-    if (isNaN(date.getTime())) {
-      return {
-        date: 'Invalid Date',
-        time: 'Invalid Time'
-      };
-    }
-    
+    const formatted = formatDateTimeUtil(dateTime);
     return {
-      date: date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      }),
-      time: date.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      })
+      date: formatted.date,
+      time: formatted.time
     };
   };
 
@@ -287,12 +257,7 @@ const ReservationsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-        </div>
-      )}
+      <ErrorMessage message={error} />
 
       {/* Business Selector */}
       <div className="mb-6">

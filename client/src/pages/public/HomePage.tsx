@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { fetchAllBusinesses, searchBusinesses } from "../services/business.service";
-import { Business } from "../models/business.model";
-import BusinessCard from "../components/shared/BusinessCard";
+import { fetchAllBusinesses, searchBusinesses } from "../../services/business.service";
+import { Business } from "../../models/business.model";
+import BusinessCard from "../../components/shared/BusinessCard";
 
 const HomePage = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);

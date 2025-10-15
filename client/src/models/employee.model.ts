@@ -3,5 +3,5 @@ export interface Employee {
   name: string;
   position: string;
   businessId: number;
-  userId?: number;  // Optional - link to User account
+  userId?: number;
 }
